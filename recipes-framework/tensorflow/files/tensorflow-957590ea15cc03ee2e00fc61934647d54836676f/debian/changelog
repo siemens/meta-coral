@@ -1,0 +1,39 @@
+tensorflow (2.5.2-1) stable; urgency=medium
+
+  * Package version 2.5.2
+
+ -- Felix Moessbauer <felix.moessbauer@siemens.com>  Wed, 12 Jan 2022 11:57:00 +0100
+
+tensorflow (2.5.0-3) stable; urgency=medium
+
+  * Add dh-python to Build-Depends
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Mon, 06 Sep 2021 10:10:00 +0100
+
+tensorflow (2.5.0-2) stable; urgency=medium
+
+  * Match Google's commit hash for 2.5.0 builds and use
+    48c3bae94a8b324525b45f157d638dfd4e8c3be1
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Thu, 10 Jun 2021 12:57:00 +0100
+
+tensorflow (2.5.0-1) stable; urgency=medium
+
+  * New upstream release
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Wed, 09 Jun 2021 11:35:00 +0100
+
+tensorflow (2.4.1-2) stable; urgency=medium
+
+  * Do not call bazel sync when local/ is already there
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Fri, 04 Jun 2021 12:55:00 +0100
+
+tensorflow (2.4.1-1) stable; urgency=medium
+
+  * Initial package
+  * Require numpy 1.19.5 instead of 1.19.2 to match what bullseye provides
+  * Require grpcio 1.30.x (instead of 1.32.0) to match buster-backports
+  * Require six 1.16.0 (instead of 1.15.0) to match bullseye
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Wed, 12 May 2021 07:51:00 +0100

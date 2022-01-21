@@ -1,0 +1,49 @@
+--- a/tensorflow/tools/ci_build/release/common.sh
++++ b/tensorflow/tools/ci_build/release/common.sh
+@@ -129,7 +129,7 @@
+   # Now, install the deps, as listed in setup.py
+   "${PIP_CMD}" install --user 'absl-py ~= 0.10'
+   "${PIP_CMD}" install --user 'astunparse ~= 1.6.3'
+-  "${PIP_CMD}" install --user 'flatbuffers ~= 1.12.0'
++  "${PIP_CMD}" install --user 'flatbuffers >= 1.12.0 , < 1.13.0'
+   "${PIP_CMD}" install --user 'google_pasta ~= 0.2'
+   "${PIP_CMD}" install --user 'h5py ~= 3.1.0'
+   "${PIP_CMD}" install --user 'keras_preprocessing ~= 1.1.2'
+@@ -186,7 +186,7 @@
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install --user 'absl-py ~= 0.10'
+   ${PIP_CMD} install --user 'astunparse ~= 1.6.3'
+-  ${PIP_CMD} install --user 'flatbuffers ~= 1.12.0'
++  ${PIP_CMD} install --user 'flatbuffers >= 1.12.0 , < 1.13.0'
+   ${PIP_CMD} install --user 'google_pasta ~= 0.2'
+   ${PIP_CMD} install --user 'h5py ~= 3.1.0'
+   ${PIP_CMD} install --user 'keras_preprocessing ~= 1.1.2'
+@@ -229,7 +229,7 @@
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install 'absl-py ~= 0.10'
+   ${PIP_CMD} install 'astunparse ~= 1.6.3'
+-  ${PIP_CMD} install 'flatbuffers ~= 1.12.0'
++  ${PIP_CMD} install 'flatbuffers >= 1.12.0 , < 1.13.0'
+   ${PIP_CMD} install 'google_pasta ~= 0.2'
+   ${PIP_CMD} install 'h5py ~= 3.1.0'
+   ${PIP_CMD} install 'keras_preprocessing ~= 1.1.2'
+@@ -276,7 +276,7 @@
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install 'absl-py ~= 0.10' --user
+   ${PIP_CMD} install 'astunparse ~= 1.6.3' --user
+-  ${PIP_CMD} install 'flatbuffers ~= 1.12.0' --user
++  ${PIP_CMD} install 'flatbuffers >= 1.12.0 , < 1.13.0' --user
+   ${PIP_CMD} install 'google_pasta ~= 0.2' --user
+   ${PIP_CMD} install 'h5py ~= 3.1.0' --user
+   ${PIP_CMD} install 'keras_preprocessing ~= 1.1.2' --user
+--- a/tensorflow/tools/pip_package/setup.py
++++ b/tensorflow/tools/pip_package/setup.py
+@@ -82,7 +82,7 @@
+     # Install other dependencies
+     'absl-py ~= 0.10',
+     'astunparse ~= 1.6.3',
+-    'flatbuffers ~= 1.12.0',
++    'flatbuffers >= 1.12.0 , < 1.13.0',
+     'google_pasta ~= 0.2',
+     'h5py ~= 3.1.0',
+     'keras_preprocessing ~= 1.1.2',

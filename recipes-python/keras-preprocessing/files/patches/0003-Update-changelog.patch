@@ -1,0 +1,26 @@
+From b4fbd311b9831a77d396e4c590197b947173aa0d Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Thu, 9 Dec 2021 13:46:33 +0100
+Subject: [PATCH 3/5] Update changelog
+
+---
+ debian/changelog | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/debian/changelog b/debian/changelog
+index 967802a..ccb5e5e 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,3 +1,9 @@
++keras-preprocessing (1.1.2) unstable; urgency=medium
++
++  * New upstream version 1.1.2
++
++ -- Felix Moessbauer <felix.moessbauer@siemens.com>  Thu, 09 Dec 2021 13:45:19 +0100
++
+ keras-preprocessing (1.1.0+ds-1) unstable; urgency=medium
+ 
+   [ Stephen Sinclair ]
+-- 
+2.30.2
+

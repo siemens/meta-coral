@@ -1,0 +1,25 @@
+From 852ef2deeefc0eae09dc58b273436f2a5c76cf79 Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Mon, 3 Jan 2022 12:31:41 +0100
+Subject: [PATCH 2/2] add CUSTOM_BAZEL_FLAGS var for pybind
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index f2bfbc7..124f617 100644
+--- a/Makefile
++++ b/Makefile
+@@ -142,7 +142,7 @@ endef
+ all: pybind tflite
+ 
+ pybind:
+-	PYTHON_BIN_PATH=$(PYTHON) bazel build $(BAZEL_BUILD_FLAGS) \
++	PYTHON_BIN_PATH=$(PYTHON) bazel build $(CUSTOM_BAZEL_FLAGS) $(BAZEL_BUILD_FLAGS) \
+ 	    --embed_label='TENSORFLOW_COMMIT=$(TENSORFLOW_COMMIT)' \
+ 	    --stamp \
+ 	    //src:_pywrap_coral
+-- 
+2.30.2
+

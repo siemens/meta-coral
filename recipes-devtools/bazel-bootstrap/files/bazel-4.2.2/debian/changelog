@@ -1,0 +1,17 @@
+bazel (4.2.2-1) stable; urgency=medium
+
+  * New upstream release
+
+ -- Felix Moessbauer <felix.moessbauer@siemens.com>  Wed, 12 Jan 2022 14:44:00 +0100
+
+bazel (4.1.0-1) stable; urgency=medium
+
+  * New upstream release
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Mon, 31 May 2021 10:07:00 +0100
+
+bazel (3.7.2-1) stable; urgency=medium
+
+  * Initial package
+
+ -- Mentor Embedded <embedded_support@mentor.com>  Tue, 11 May 2021 12:40:00 +0100

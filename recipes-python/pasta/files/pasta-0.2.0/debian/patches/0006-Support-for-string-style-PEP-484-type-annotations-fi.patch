@@ -1,0 +1,169 @@
+From 113a3a4cd11aaee668dee46e81620105735f8427 Mon Sep 17 00:00:00 2001
+From: Nick Smith <smithnick@google.com>
+Date: Tue, 24 Nov 2020 14:03:19 -0800
+Subject: [PATCH 06/11] Support for string-style PEP 484 type annotations -
+ fixes #84
+
+---
+ pasta/augment/rename.py      |  2 ++
+ pasta/augment/rename_test.py | 15 +++++++++
+ pasta/base/scope.py          | 19 ++++++++++++
+ pasta/base/scope_test.py     | 60 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 96 insertions(+)
+
+diff --git a/pasta/augment/rename.py b/pasta/augment/rename.py
+index aead50a..eff0775 100644
+--- a/pasta/augment/rename.py
++++ b/pasta/augment/rename.py
+@@ -150,5 +150,7 @@ def _rename_reads(sc, t, old_name, new_name):
+       ast_utils.replace_child(sc.parent(ref_node), ref_node,
+                               ast.parse(new_name).body[0].value)
+       has_changed = True
++    elif isinstance(ref_node, ast.Str) and ref_node.s.startswith(old_name):
++      ref_node.s = ref_node.s.replace(old_name, new_name, 1)
+ 
+   return has_changed
+diff --git a/pasta/augment/rename_test.py b/pasta/augment/rename_test.py
+index 5f773fe..fe66d05 100644
+--- a/pasta/augment/rename_test.py
++++ b/pasta/augment/rename_test.py
+@@ -19,6 +19,7 @@ from __future__ import division
+ from __future__ import print_function
+ 
+ import ast
++import textwrap
+ import unittest
+ 
+ from pasta.augment import rename
+@@ -109,6 +110,20 @@ class RenameTest(test_utils.TestCase):
+     rename._rename_reads(sc, t, 'bbb.aaa', 'xxx.yyy')
+     self.checkAstsEqual(t, ast.parse(src))
+ 
++  @test_utils.requires_features('type_annotations')
++  def test_rename_reads_type_annotation(self):
++    src = textwrap.dedent("""\
++        def foo(bar: 'aaa.bbb.ccc.Bar'):
++          pass
++        """)
++    t = ast.parse(src)
++    sc = scope.analyze(t)
++    rename._rename_reads(sc, t, 'aaa.bbb', 'xxx.yyy')
++    self.checkAstsEqual(t, ast.parse(textwrap.dedent("""\
++        def foo(bar: 'xxx.yyy.ccc.Bar'):
++          pass
++        """)))
++
+ 
+ def suite():
+   result = unittest.TestSuite()
+diff --git a/pasta/base/scope.py b/pasta/base/scope.py
+index 380a0d5..e7180f1 100644
+--- a/pasta/base/scope.py
++++ b/pasta/base/scope.py
+@@ -143,6 +143,16 @@ class ScopeVisitor(ast.NodeVisitor):
+ 
+   def visit_arg(self, node):
+     self.scope.define_name(node.arg, node)
++
++    # PEP 484 forward reference type annotations
++    if hasattr(node, 'annotation') and isinstance(node.annotation, ast.Str):
++      name_parts = node.annotation.s.split('.')
++      # TODO: Fix this; the name may not be defined in the root scope.
++      name = self.root_scope.forward_define_name(name_parts[0], node.annotation)
++      for part in name_parts[1:]:
++        name = name.lookup_name(part)
++        name.add_reference(node.annotation)
++
+     self.generic_visit(node)
+ 
+   def visit_ClassDef(self, node):
+@@ -178,6 +188,15 @@ class Scope(object):
+     name_obj.define(node)
+     return name_obj
+ 
++  def forward_define_name(self, name, node):
++    """Define this name as a forward-reference (does not set definition)."""
++    try:
++      name_obj = self.names[name]
++    except KeyError:
++      name_obj = self.names[name] = Name(name)
++    name_obj.add_reference(node)
++    return name_obj
++
+   def lookup_name(self, name):
+     try:
+       return self.names[name]
+diff --git a/pasta/base/scope_test.py b/pasta/base/scope_test.py
+index a753fd5..ffc5f62 100644
+--- a/pasta/base/scope_test.py
++++ b/pasta/base/scope_test.py
+@@ -351,6 +351,66 @@ class ScopeTest(test_utils.TestCase):
+     self.assertItemsEqual(s.names['aaa'].reads,
+                           [func.args.args[0].annotation.value])
+ 
++  @test_utils.requires_features('type_annotations')
++  def test_import_in_argument_type_string(self):
++    source = textwrap.dedent("""\
++        import aaa
++        def foo(bar: 'aaa.Bar'):
++          pass
++        """)
++    tree = ast.parse(source)
++    nodes = tree.body
++
++    func = nodes[1]
++
++    s = scope.analyze(tree)
++
++    self.assertItemsEqual(s.names.keys(), {'aaa', 'foo'})
++    self.assertItemsEqual(s.external_references.keys(), {'aaa'})
++    self.assertItemsEqual(s.names['aaa'].reads,
++                          [func.args.args[0].annotation])
++    self.assertItemsEqual(s.names['aaa'].lookup_name('Bar').reads,
++                          [func.args.args[0].annotation])
++
++  @test_utils.requires_features('type_annotations')
++  def test_forward_type_reference(self):
++    source = textwrap.dedent("""\
++        class A():
++          def foo(self, a: 'A'): pass
++        """)
++    tree = ast.parse(source)
++    nodes = tree.body
++
++    classdef = nodes[0]
++
++    s = scope.analyze(tree)
++
++    self.assertItemsEqual(s.names.keys(), {'A'})
++    self.assertItemsEqual(s.names['A'].reads,
++                          [classdef.body[0].args.args[1].annotation])
++
++  @test_utils.requires_features('type_annotations')
++  def test_forward_type_reference2(self):
++    source = textwrap.dedent("""\
++        class A():
++          def foo(self, b: 'B'): pass
++        class B():
++          def foo(self, a: 'A'): pass
++        """)
++    tree = ast.parse(source)
++    nodes = tree.body
++
++    a_classdef = nodes[0]
++    b_classdef = nodes[1]
++
++    s = scope.analyze(tree)
++
++    self.assertItemsEqual(s.names.keys(), {'A', 'B'})
++    self.assertItemsEqual(s.names['A'].reads,
++                          [b_classdef.body[0].args.args[1].annotation])
++    self.assertItemsEqual(s.names['B'].reads,
++                          [a_classdef.body[0].args.args[1].annotation])
++
+   def test_import_attribute_references(self):
+     source = textwrap.dedent("""\
+         import aaa.bbb.ccc, ddd.eee
+-- 
+2.30.2
+

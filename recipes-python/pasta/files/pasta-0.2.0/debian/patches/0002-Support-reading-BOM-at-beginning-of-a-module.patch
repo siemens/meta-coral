@@ -1,0 +1,82 @@
+From 7b0cee8af8efb304621c47feb28c21c38b10ec7f Mon Sep 17 00:00:00 2001
+From: Nick Smith <smithnick@google.com>
+Date: Wed, 18 Mar 2020 15:08:41 -0700
+Subject: [PATCH 02/11] Support reading BOM at beginning of a module
+
+Fixes #31
+---
+ pasta/base/annotate.py          | 8 ++++++++
+ pasta/base/codegen.py           | 8 ++++++++
+ testdata/ast/bom.in             | 1 +
+ testdata/ast/golden/2.7/bom.out | 5 +++++
+ 4 files changed, 22 insertions(+)
+ create mode 100644 testdata/ast/bom.in
+ create mode 100644 testdata/ast/golden/2.7/bom.out
+
+diff --git a/pasta/base/annotate.py b/pasta/base/annotate.py
+index 5b53c76..561246a 100644
+--- a/pasta/base/annotate.py
++++ b/pasta/base/annotate.py
+@@ -27,6 +27,7 @@ import numbers
+ import six
+ from six.moves import zip
+ import sys
++import token
+ 
+ from pasta.base import ast_constants
+ from pasta.base import ast_utils
+@@ -223,6 +224,13 @@ class BaseVisitor(ast.NodeVisitor):
+   # Keeps the entire suffix, so @block_statement is not useful here.
+   @module
+   def visit_Module(self, node):
++    try:
++      self.attr(
++          node, 'bom',
++          [lambda: self.tokens.eat_tokens(lambda t: t.type == token.ERRORTOKEN)],
++          default='')
++    except:
++      pass
+     self.generic_visit(node)
+ 
+   @block_statement
+diff --git a/pasta/base/codegen.py b/pasta/base/codegen.py
+index dfdff1a..14c69fe 100644
+--- a/pasta/base/codegen.py
++++ b/pasta/base/codegen.py
+@@ -53,6 +53,14 @@ class Printer(annotate.BaseVisitor):
+       raise PrintError(e)
+     del node._printer_info
+ 
++  def visit_Module(self, node):
++    self.prefix(node)
++    bom = fmt.get(node, 'bom')
++    if bom is not None:
++      self.code += bom
++    self.generic_visit(node)
++    self.suffix(node)
++
+   def visit_Num(self, node):
+     self.prefix(node)
+     content = fmt.get(node, 'content')
+diff --git a/testdata/ast/bom.in b/testdata/ast/bom.in
+new file mode 100644
+index 0000000..ae369c6
+--- /dev/null
++++ b/testdata/ast/bom.in
+@@ -0,0 +1 @@
++﻿x=1
+\ No newline at end of file
+diff --git a/testdata/ast/golden/2.7/bom.out b/testdata/ast/golden/2.7/bom.out
+new file mode 100644
+index 0000000..dd03ba2
+--- /dev/null
++++ b/testdata/ast/golden/2.7/bom.out
+@@ -0,0 +1,5 @@
++(-1, -1)     Module               	prefix=||	suffix=||	indent=||
++(1, 0)       Assign               	prefix=||	suffix=||	indent=||
++(1, 0)       Name x               	prefix=||	suffix=||	indent=||
++(1, 2)       Num                  	prefix=||	suffix=||	indent=||
++(-1, -1)     Store                	prefix=||	suffix=||	indent=||
+-- 
+2.30.2
+

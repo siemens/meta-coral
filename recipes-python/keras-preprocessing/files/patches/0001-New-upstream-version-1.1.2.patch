@@ -1,0 +1,943 @@
+From 906bcfa594d9b9601af18e66b52c7359524bb7fc Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Thu, 9 Dec 2021 13:42:33 +0100
+Subject: [PATCH 1/5] New upstream version 1.1.2
+
+---
+ PKG-INFO                                      |   4 +-
+ keras_preprocessing/__init__.py               |   2 +-
+ .../image/dataframe_iterator.py               |   9 ++
+ .../image/directory_iterator.py               |   9 ++
+ .../image/image_data_generator.py             |  62 ++++----
+ .../image/numpy_array_iterator.py             |   9 ++
+ keras_preprocessing/image/utils.py            |  84 +++++-----
+ keras_preprocessing/sequence.py               |  20 +--
+ keras_preprocessing/text.py                   |  16 +-
+ setup.py                                      |   6 +-
+ tests/image/directory_iterator_test.py        |  32 ++--
+ tests/image/image_data_generator_test.py      |  46 ++++++
+ tests/image/utils_test.py                     | 147 ++++++++++++++++++
+ tests/text_test.py                            |   2 +-
+ 14 files changed, 352 insertions(+), 96 deletions(-)
+
+diff --git a/PKG-INFO b/PKG-INFO
+index 98768ed..c3a6677 100644
+--- a/PKG-INFO
++++ b/PKG-INFO
+@@ -1,12 +1,12 @@
+ Metadata-Version: 1.1
+ Name: Keras_Preprocessing
+-Version: 1.1.0
++Version: 1.1.2
+ Summary: Easy data preprocessing and data augmentation for deep learning models
+ Home-page: https://github.com/keras-team/keras-preprocessing
+ Author: Keras Team
+ Author-email: UNKNOWN
+ License: MIT
+-Download-URL: https://github.com/keras-team/keras-preprocessing/tarball/1.1.0
++Download-URL: https://github.com/keras-team/keras-preprocessing/tarball/1.1.2
+ Description: 
+         Keras Preprocessing is the data preprocessing
+         and data augmentation module of the Keras deep learning library.
+diff --git a/keras_preprocessing/__init__.py b/keras_preprocessing/__init__.py
+index 31fd376..717c10e 100644
+--- a/keras_preprocessing/__init__.py
++++ b/keras_preprocessing/__init__.py
+@@ -40,4 +40,4 @@ def get_keras_submodule(name):
+         return _KERAS_UTILS
+ 
+ 
+-__version__ = '1.1.0'
++__version__ = '1.1.2'
+diff --git a/keras_preprocessing/image/dataframe_iterator.py b/keras_preprocessing/image/dataframe_iterator.py
+index 5412df2..801039e 100644
+--- a/keras_preprocessing/image/dataframe_iterator.py
++++ b/keras_preprocessing/image/dataframe_iterator.py
+@@ -89,6 +89,15 @@ class DataFrameIterator(BatchFromFilesMixin, Iterator):
+         'binary', 'categorical', 'input', 'multi_output', 'raw', 'sparse', None
+     }
+ 
++    def __new__(cls, *args, **kwargs):
++        try:
++            from tensorflow.keras.utils import Sequence as TFSequence
++            if TFSequence not in cls.__bases__:
++                cls.__bases__ = cls.__bases__ + (TFSequence,)
++        except ImportError:
++            pass
++        return super(DataFrameIterator, cls).__new__(cls)
++
+     def __init__(self,
+                  dataframe,
+                  directory=None,
+diff --git a/keras_preprocessing/image/directory_iterator.py b/keras_preprocessing/image/directory_iterator.py
+index 3f75d83..3a829b4 100644
+--- a/keras_preprocessing/image/directory_iterator.py
++++ b/keras_preprocessing/image/directory_iterator.py
+@@ -64,6 +64,15 @@ class DirectoryIterator(BatchFromFilesMixin, Iterator):
+     """
+     allowed_class_modes = {'categorical', 'binary', 'sparse', 'input', None}
+ 
++    def __new__(cls, *args, **kwargs):
++        try:
++            from tensorflow.keras.utils import Sequence as TFSequence
++            if TFSequence not in cls.__bases__:
++                cls.__bases__ = cls.__bases__ + (TFSequence,)
++        except ImportError:
++            pass
++        return super(DirectoryIterator, cls).__new__(cls)
++
+     def __init__(self,
+                  directory,
+                  image_data_generator,
+diff --git a/keras_preprocessing/image/image_data_generator.py b/keras_preprocessing/image/image_data_generator.py
+index 5c926eb..cbebbd7 100644
+--- a/keras_preprocessing/image/image_data_generator.py
++++ b/keras_preprocessing/image/image_data_generator.py
+@@ -49,7 +49,7 @@ class ImageDataGenerator(object):
+                 are integers `[-1, 0, +1]`,
+                 same as with `width_shift_range=[-1, 0, +1]`,
+                 while with `width_shift_range=1.0` possible values are floats
+-                in the interval [-1.0, +1.0).
++                in the interval `[-1.0, +1.0)`.
+         height_shift_range: Float, 1-D array-like or int
+             - float: fraction of total height, if < 1, or pixels if >= 1.
+             - 1-D array-like: random elements from the array.
+@@ -59,7 +59,7 @@ class ImageDataGenerator(object):
+                 are integers `[-1, 0, +1]`,
+                 same as with `height_shift_range=[-1, 0, +1]`,
+                 while with `height_shift_range=1.0` possible values are floats
+-                in the interval [-1.0, +1.0).
++                in the interval `[-1.0, +1.0)`.
+         brightness_range: Tuple or list of two floats. Range for picking
+             a brightness shift value from.
+         shear_range: Float. Shear Intensity
+@@ -87,8 +87,8 @@ class ImageDataGenerator(object):
+         preprocessing_function: function that will be applied on each input.
+             The function will run after the image is resized and augmented.
+             The function should take one argument:
+-            one image (Numpy tensor with rank 3),
+-            and should output a Numpy tensor with the same shape.
++            one image (NumPy tensor with rank 3),
++            and should output a NumPy tensor with the same shape.
+         data_format: Image data format,
+             either "channels_first" or "channels_last".
+             "channels_last" mode means that the images should have shape
+@@ -322,9 +322,10 @@ class ImageDataGenerator(object):
+         self.std = None
+         self.principal_components = None
+ 
+-        if np.isscalar(zoom_range):
++        if isinstance(zoom_range, (float, int)):
+             self.zoom_range = [1 - zoom_range, 1 + zoom_range]
+-        elif len(zoom_range) == 2:
++        elif (len(zoom_range) == 2 and
++              all(isinstance(val, (float, int)) for val in zoom_range)):
+             self.zoom_range = [zoom_range[0], zoom_range[1]]
+         else:
+             raise ValueError('`zoom_range` should be a float or '
+@@ -378,10 +379,10 @@ class ImageDataGenerator(object):
+         """Takes data & label arrays, generates batches of augmented data.
+ 
+         # Arguments
+-            x: Input data. Numpy array of rank 4 or a tuple.
++            x: Input data. NumPy array of rank 4 or a tuple.
+                 If tuple, the first element
+                 should contain the images and the second element
+-                another numpy array or a list of numpy arrays
++                another NumPy array or a list of NumPy arrays
+                 that gets passed to the output
+                 without any modifications.
+                 Can be used to feed the model miscellaneous data
+@@ -409,13 +410,13 @@ class ImageDataGenerator(object):
+ 
+         # Returns
+             An `Iterator` yielding tuples of `(x, y)`
+-                where `x` is a numpy array of image data
++                where `x` is a NumPy array of image data
+                 (in the case of a single image input) or a list
+-                of numpy arrays (in the case with
+-                additional inputs) and `y` is a numpy array
++                of NumPy arrays (in the case with
++                additional inputs) and `y` is a NumPy array
+                 of corresponding labels. If 'sample_weight' is not None,
+                 the yielded tuples are of the form `(x, y, sample_weight)`.
+-                If `y` is None, only the numpy array `x` is returned.
++                If `y` is None, only the NumPy array `x` is returned.
+         """
+         return NumpyArrayIterator(
+             x,
+@@ -429,7 +430,8 @@ class ImageDataGenerator(object):
+             save_to_dir=save_to_dir,
+             save_prefix=save_prefix,
+             save_format=save_format,
+-            subset=subset
++            subset=subset,
++            dtype=self.dtype
+         )
+ 
+     def flow_from_directory(self,
+@@ -517,9 +519,9 @@ class ImageDataGenerator(object):
+ 
+         # Returns
+             A `DirectoryIterator` yielding tuples of `(x, y)`
+-                where `x` is a numpy array containing a batch
++                where `x` is a NumPy array containing a batch
+                 of images with shape `(batch_size, *target_size, channels)`
+-                and `y` is a numpy array of corresponding labels.
++                and `y` is a NumPy array of corresponding labels.
+         """
+         return DirectoryIterator(
+             directory,
+@@ -537,7 +539,8 @@ class ImageDataGenerator(object):
+             save_format=save_format,
+             follow_links=follow_links,
+             subset=subset,
+-            interpolation=interpolation
++            interpolation=interpolation,
++            dtype=self.dtype
+         )
+ 
+     def flow_from_dataframe(self,
+@@ -600,14 +603,14 @@ class ImageDataGenerator(object):
+             class_mode: one of "binary", "categorical", "input", "multi_output",
+                 "raw", sparse" or None. Default: "categorical".
+                 Mode for yielding the targets:
+-                - `"binary"`: 1D numpy array of binary labels,
+-                - `"categorical"`: 2D numpy array of one-hot encoded labels.
++                - `"binary"`: 1D NumPy array of binary labels,
++                - `"categorical"`: 2D NumPy array of one-hot encoded labels.
+                     Supports multi-label output.
+                 - `"input"`: images identical to input images (mainly used to
+                     work with autoencoders),
+                 - `"multi_output"`: list with the values of the different columns,
+-                - `"raw"`: numpy array of values in `y_col` column(s),
+-                - `"sparse"`: 1D numpy array of integer labels,
++                - `"raw"`: NumPy array of values in `y_col` column(s),
++                - `"sparse"`: 1D NumPy array of integer labels,
+                 - `None`, no targets are returned (the generator will only yield
+                     batches of image data, which is useful to use in
+                     `model.predict_generator()`).
+@@ -639,9 +642,9 @@ class ImageDataGenerator(object):
+ 
+         # Returns
+             A `DataFrameIterator` yielding tuples of `(x, y)`
+-            where `x` is a numpy array containing a batch
++            where `x` is a NumPy array containing a batch
+             of images with shape `(batch_size, *target_size, channels)`
+-            and `y` is a numpy array of corresponding labels.
++            and `y` is a NumPy array of corresponding labels.
+         """
+         if 'has_ext' in kwargs:
+             warnings.warn('has_ext is deprecated, filenames in the dataframe have '
+@@ -680,19 +683,20 @@ class ImageDataGenerator(object):
+             save_format=save_format,
+             subset=subset,
+             interpolation=interpolation,
+-            validate_filenames=validate_filenames
++            validate_filenames=validate_filenames,
++            dtype=self.dtype
+         )
+ 
+     def standardize(self, x):
+         """Applies the normalization configuration in-place to a batch of inputs.
+ 
+         `x` is changed in-place since the function is mainly used internally
+-        to standarize images and feed them to your network. If a copy of `x`
++        to standardize images and feed them to your network. If a copy of `x`
+         would be created instead it would have a significant performance cost.
+         If you want to apply this method without changing the input in-place
+         you can call the method creating a copy before:
+ 
+-        standarize(np.copy(x))
++        standardize(np.copy(x))
+ 
+         # Arguments
+             x: Batch of inputs to be normalized.
+@@ -845,7 +849,7 @@ class ImageDataGenerator(object):
+                 - `'zy'`: Float. Zoom in the y direction.
+                 - `'flip_horizontal'`: Boolean. Horizontal flip.
+                 - `'flip_vertical'`: Boolean. Vertical flip.
+-                - `'channel_shift_intencity'`: Float. Channel shift intensity.
++                - `'channel_shift_intensity'`: Float. Channel shift intensity.
+                 - `'brightness'`: Float. Brightness shift intensity.
+ 
+         # Returns
+@@ -910,6 +914,9 @@ class ImageDataGenerator(object):
+         Only required if `featurewise_center` or
+         `featurewise_std_normalization` or `zca_whitening` are set to True.
+ 
++        When `rescale` is set to a value, rescaling is applied to
++        sample data before computing the internal data stats.
++
+         # Arguments
+             x: Sample data. Should have rank 4.
+              In case of grayscale data,
+@@ -943,6 +950,9 @@ class ImageDataGenerator(object):
+             np.random.seed(seed)
+ 
+         x = np.copy(x)
++        if self.rescale:
++            x *= self.rescale
++
+         if augment:
+             ax = np.zeros(
+                 tuple([rounds * x.shape[0]] + list(x.shape)[1:]),
+diff --git a/keras_preprocessing/image/numpy_array_iterator.py b/keras_preprocessing/image/numpy_array_iterator.py
+index f03434b..4dc7b74 100644
+--- a/keras_preprocessing/image/numpy_array_iterator.py
++++ b/keras_preprocessing/image/numpy_array_iterator.py
+@@ -42,6 +42,15 @@ class NumpyArrayIterator(Iterator):
+         dtype: Dtype to use for the generated arrays.
+     """
+ 
++    def __new__(cls, *args, **kwargs):
++        try:
++            from tensorflow.keras.utils import Sequence as TFSequence
++            if TFSequence not in cls.__bases__:
++                cls.__bases__ = cls.__bases__ + (TFSequence,)
++        except ImportError:
++            pass
++        return super(NumpyArrayIterator, cls).__new__(cls)
++
+     def __init__(self,
+                  x,
+                  y,
+diff --git a/keras_preprocessing/image/utils.py b/keras_preprocessing/image/utils.py
+index 39be888..bc3e688 100644
+--- a/keras_preprocessing/image/utils.py
++++ b/keras_preprocessing/image/utils.py
+@@ -4,6 +4,7 @@ from __future__ import absolute_import
+ from __future__ import division
+ from __future__ import print_function
+ 
++import io
+ import os
+ import warnings
+ 
+@@ -82,8 +83,9 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
+     # Arguments
+         path: Path to image file.
+         grayscale: DEPRECATED use `color_mode="grayscale"`.
+-        color_mode: One of "grayscale", "rgb", "rgba". Default: "rgb".
+-            The desired image format.
++        color_mode: The desired image format. One of "grayscale", "rgb", "rgba".
++            "grayscale" supports 8-bit images and 32-bit signed integer images.
++            Default: "rgb".
+         target_size: Either `None` (default to original size)
+             or tuple of ints `(img_height, img_width)`.
+         interpolation: Interpolation method used to resample the image if the
+@@ -91,7 +93,8 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
+             Supported methods are "nearest", "bilinear", and "bicubic".
+             If PIL version 1.1.3 or newer is installed, "lanczos" is also
+             supported. If PIL version 3.4.0 or newer is installed, "box" and
+-            "hamming" are also supported. By default, "nearest" is used.
++            "hamming" are also supported.
++            Default: "nearest".
+ 
+     # Returns
+         A PIL Image instance.
+@@ -107,30 +110,33 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
+     if pil_image is None:
+         raise ImportError('Could not import PIL.Image. '
+                           'The use of `load_img` requires PIL.')
+-    img = pil_image.open(path)
+-    if color_mode == 'grayscale':
+-        if img.mode != 'L':
+-            img = img.convert('L')
+-    elif color_mode == 'rgba':
+-        if img.mode != 'RGBA':
+-            img = img.convert('RGBA')
+-    elif color_mode == 'rgb':
+-        if img.mode != 'RGB':
+-            img = img.convert('RGB')
+-    else:
+-        raise ValueError('color_mode must be "grayscale", "rgb", or "rgba"')
+-    if target_size is not None:
+-        width_height_tuple = (target_size[1], target_size[0])
+-        if img.size != width_height_tuple:
+-            if interpolation not in _PIL_INTERPOLATION_METHODS:
+-                raise ValueError(
+-                    'Invalid interpolation method {} specified. Supported '
+-                    'methods are {}'.format(
+-                        interpolation,
+-                        ", ".join(_PIL_INTERPOLATION_METHODS.keys())))
+-            resample = _PIL_INTERPOLATION_METHODS[interpolation]
+-            img = img.resize(width_height_tuple, resample)
+-    return img
++    with open(path, 'rb') as f:
++        img = pil_image.open(io.BytesIO(f.read()))
++        if color_mode == 'grayscale':
++            # if image is not already an 8-bit, 16-bit or 32-bit grayscale image
++            # convert it to an 8-bit grayscale image.
++            if img.mode not in ('L', 'I;16', 'I'):
++                img = img.convert('L')
++        elif color_mode == 'rgba':
++            if img.mode != 'RGBA':
++                img = img.convert('RGBA')
++        elif color_mode == 'rgb':
++            if img.mode != 'RGB':
++                img = img.convert('RGB')
++        else:
++            raise ValueError('color_mode must be "grayscale", "rgb", or "rgba"')
++        if target_size is not None:
++            width_height_tuple = (target_size[1], target_size[0])
++            if img.size != width_height_tuple:
++                if interpolation not in _PIL_INTERPOLATION_METHODS:
++                    raise ValueError(
++                        'Invalid interpolation method {} specified. Supported '
++                        'methods are {}'.format(
++                            interpolation,
++                            ", ".join(_PIL_INTERPOLATION_METHODS.keys())))
++                resample = _PIL_INTERPOLATION_METHODS[interpolation]
++                img = img.resize(width_height_tuple, resample)
++        return img
+ 
+ 
+ def list_pictures(directory, ext=('jpg', 'jpeg', 'bmp', 'png', 'ppm', 'tif',
+@@ -202,12 +208,11 @@ def _list_valid_filenames_in_directory(directory, white_list_formats, split,
+     """
+     dirname = os.path.basename(directory)
+     if split:
+-        num_files = len(list(
+-            _iter_valid_files(directory, white_list_formats, follow_links)))
++        all_files = list(_iter_valid_files(directory, white_list_formats,
++                                           follow_links))
++        num_files = len(all_files)
+         start, stop = int(split[0] * num_files), int(split[1] * num_files)
+-        valid_files = list(
+-            _iter_valid_files(
+-                directory, white_list_formats, follow_links))[start: stop]
++        valid_files = all_files[start: stop]
+     else:
+         valid_files = _iter_valid_files(
+             directory, white_list_formats, follow_links)
+@@ -228,11 +233,13 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
+ 
+     # Arguments
+         x: Input Numpy array.
+-        data_format: Image data format.
+-            either "channels_first" or "channels_last".
+-        scale: Whether to rescale image values
+-            to be within `[0, 255]`.
++        data_format: Image data format, either "channels_first" or "channels_last".
++            Default: "channels_last".
++        scale: Whether to rescale the image such that minimum and maximum values
++            are 0 and 255 respectively.
++            Default: True.
+         dtype: Dtype to use.
++            Default: "float32".
+ 
+     # Returns
+         A PIL Image instance.
+@@ -258,7 +265,7 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
+     if data_format == 'channels_first':
+         x = x.transpose(1, 2, 0)
+     if scale:
+-        x = x + max(-np.min(x), 0)
++        x = x - np.min(x)
+         x_max = np.max(x)
+         if x_max != 0:
+             x /= x_max
+@@ -271,6 +278,9 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
+         return pil_image.fromarray(x.astype('uint8'), 'RGB')
+     elif x.shape[2] == 1:
+         # grayscale
++        if np.max(x) > 255:
++            # 32-bit signed integer grayscale image. PIL mode "I"
++            return pil_image.fromarray(x[:, :, 0].astype('int32'), 'I')
+         return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
+     else:
+         raise ValueError('Unsupported channel number: %s' % (x.shape[2],))
+diff --git a/keras_preprocessing/sequence.py b/keras_preprocessing/sequence.py
+index 0e03002..ac321f6 100644
+--- a/keras_preprocessing/sequence.py
++++ b/keras_preprocessing/sequence.py
+@@ -23,7 +23,8 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
+     or the length of the longest sequence otherwise.
+ 
+     Sequences that are shorter than `num_timesteps`
+-    are padded with `value` at the end.
++    are padded with `value` at the beginning or the end
++    if padding='post.
+ 
+     Sequences longer than `num_timesteps` are truncated
+     so that they fit the desired length.
+@@ -56,9 +57,18 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
+     num_samples = len(sequences)
+ 
+     lengths = []
++    sample_shape = ()
++    flag = True
++
++    # take the sample shape from the first non empty sequence
++    # checking for consistency in the main loop below.
++
+     for x in sequences:
+         try:
+             lengths.append(len(x))
++            if flag and len(x):
++                sample_shape = np.asarray(x).shape[1:]
++                flag = False
+         except TypeError:
+             raise ValueError('`sequences` must be a list of iterables. '
+                              'Found non-iterable: ' + str(x))
+@@ -66,14 +76,6 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
+     if maxlen is None:
+         maxlen = np.max(lengths)
+ 
+-    # take the sample shape from the first non empty sequence
+-    # checking for consistency in the main loop below.
+-    sample_shape = tuple()
+-    for s in sequences:
+-        if len(s) > 0:
+-            sample_shape = np.asarray(s).shape[1:]
+-            break
+-
+     is_dtype_str = np.issubdtype(dtype, np.str_) or np.issubdtype(dtype, np.unicode_)
+     if isinstance(value, six.string_types) and dtype != object and not is_dtype_str:
+         raise ValueError("`dtype` {} is not compatible with `value`'s type: {}\n"
+diff --git a/keras_preprocessing/text.py b/keras_preprocessing/text.py
+index 573e411..00a8ad6 100644
+--- a/keras_preprocessing/text.py
++++ b/keras_preprocessing/text.py
+@@ -43,8 +43,10 @@ def text_to_word_sequence(text,
+         text = text.lower()
+ 
+     if sys.version_info < (3,):
+-        if isinstance(text, unicode):
+-            translate_map = dict((ord(c), unicode(split)) for c in filters)
++        if isinstance(text, unicode):  # noqa: F821
++            translate_map = {
++                ord(c): unicode(split) for c in filters  # noqa: F821
++            }
+             text = text.translate(translate_map)
+         elif len(split) == 1:
+             translate_map = maketrans(filters, split * len(filters))
+@@ -53,7 +55,7 @@ def text_to_word_sequence(text,
+             for c in filters:
+                 text = text.replace(c, split)
+     else:
+-        translate_dict = dict((c, split) for c in filters)
++        translate_dict = {c: split for c in filters}
+         translate_map = maketrans(translate_dict)
+         text = text.translate(translate_map)
+ 
+@@ -191,8 +193,8 @@ class Tokenizer(object):
+         self.char_level = char_level
+         self.oov_token = oov_token
+         self.index_docs = defaultdict(int)
+-        self.word_index = dict()
+-        self.index_word = dict()
++        self.word_index = {}
++        self.index_word = {}
+ 
+     def fit_on_texts(self, texts):
+         """Updates internal vocabulary based on a list of texts.
+@@ -241,9 +243,9 @@ class Tokenizer(object):
+ 
+         # note that index 0 is reserved, never assigned to an existing word
+         self.word_index = dict(
+-            list(zip(sorted_voc, list(range(1, len(sorted_voc) + 1)))))
++            zip(sorted_voc, list(range(1, len(sorted_voc) + 1))))
+ 
+-        self.index_word = dict((c, w) for w, c in self.word_index.items())
++        self.index_word = {c: w for w, c in self.word_index.items()}
+ 
+         for w, c in list(self.word_docs.items()):
+             self.index_docs[self.word_index[w]] = c
+diff --git a/setup.py b/setup.py
+index bb8dfac..952f197 100644
+--- a/setup.py
++++ b/setup.py
+@@ -23,21 +23,21 @@ and is distributed under the MIT license.
+ '''
+ 
+ setup(name='Keras_Preprocessing',
+-      version='1.1.0',
++      version='1.1.2',
+       description='Easy data preprocessing and data augmentation '
+                   'for deep learning models',
+       long_description=long_description,
+       author='Keras Team',
+       url='https://github.com/keras-team/keras-preprocessing',
+       download_url='https://github.com/keras-team/'
+-                   'keras-preprocessing/tarball/1.1.0',
++                   'keras-preprocessing/tarball/1.1.2',
+       license='MIT',
+       install_requires=['numpy>=1.9.1',
+                         'six>=1.9.0'],
+       extras_require={
+           'tests': ['pandas',
+                     'Pillow' if sys.version_info >= (3, 0) else 'pillow',
+-                    'tensorflow==1.7',  # CPU version
++                    'tensorflow',  # CPU version
+                     'keras',
+                     'pytest',
+                     'pytest-xdist',
+diff --git a/tests/image/directory_iterator_test.py b/tests/image/directory_iterator_test.py
+index 36230b7..67e271b 100644
+--- a/tests/image/directory_iterator_test.py
++++ b/tests/image/directory_iterator_test.py
+@@ -16,23 +16,35 @@ def all_test_images():
+     rgb_images = []
+     rgba_images = []
+     gray_images = []
++    gray_images_16bit = []
++    gray_images_32bit = []
+     for n in range(8):
+         bias = np.random.rand(img_w, img_h, 1) * 64
+         variance = np.random.rand(img_w, img_h, 1) * (255 - 64)
++        # RGB
+         imarray = np.random.rand(img_w, img_h, 3) * variance + bias
+         im = Image.fromarray(imarray.astype('uint8')).convert('RGB')
+         rgb_images.append(im)
+-
++        # RGBA
+         imarray = np.random.rand(img_w, img_h, 4) * variance + bias
+         im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
+         rgba_images.append(im)
+-
++        # 8-bit grayscale
+         imarray = np.random.rand(img_w, img_h, 1) * variance + bias
+-        im = Image.fromarray(
+-            imarray.astype('uint8').squeeze()).convert('L')
++        im = Image.fromarray(imarray.astype('uint8').squeeze()).convert('L')
+         gray_images.append(im)
++        # 16-bit grayscale
++        imarray = np.array(
++            np.random.randint(-2147483648, 2147483647, (img_w, img_h))
++        )
++        im = Image.fromarray(imarray.astype('uint16'))
++        gray_images_16bit.append(im)
++        # 32-bit grayscale
++        im = Image.fromarray(imarray.astype('uint32'))
++        gray_images_32bit.append(im)
+ 
+-    return [rgb_images, rgba_images, gray_images]
++    return [rgb_images, rgba_images,
++            gray_images, gray_images_16bit, gray_images_32bit]
+ 
+ 
+ def test_directory_iterator(all_test_images, tmpdir):
+@@ -101,7 +113,7 @@ def test_directory_iterator(all_test_images, tmpdir):
+                                             color_mode='rgb',
+                                             batch_size=3,
+                                             class_mode='categorical')
+-    assert len(dir_seq) == np.ceil(count / 3)
++    assert len(dir_seq) == np.ceil(count / 3.)
+     x1, y1 = dir_seq[1]
+     assert x1.shape == (3, 26, 26, 3)
+     assert y1.shape == (3, num_classes)
+@@ -109,7 +121,7 @@ def test_directory_iterator(all_test_images, tmpdir):
+     assert (x1 == 0).all()
+ 
+     with pytest.raises(ValueError):
+-        x1, y1 = dir_seq[9]
++        x1, y1 = dir_seq[14]  # there are 40 images and batch size is 3
+ 
+ 
+ def test_directory_iterator_class_mode_input(all_test_images, tmpdir):
+@@ -140,9 +152,9 @@ def test_directory_iterator_class_mode_input(all_test_images, tmpdir):
+ 
+ 
+ @pytest.mark.parametrize('validation_split,num_training', [
+-    (0.25, 18),
+-    (0.50, 12),
+-    (0.75, 6),
++    (0.25, 30),
++    (0.50, 20),
++    (0.75, 10),
+ ])
+ def test_directory_iterator_with_validation_split(all_test_images,
+                                                   validation_split,
+diff --git a/tests/image/image_data_generator_test.py b/tests/image/image_data_generator_test.py
+index f5f9e1c..8a1e58b 100644
+--- a/tests/image/image_data_generator_test.py
++++ b/tests/image/image_data_generator_test.py
+@@ -442,5 +442,51 @@ def test_random_transforms():
+     assert transform_dict['brightness'] is None
+ 
+ 
++def test_fit_rescale(all_test_images):
++    rescale = 1. / 255
++
++    for test_images in all_test_images:
++        img_list = []
++        for im in test_images:
++            img_list.append(utils.img_to_array(im)[None, ...])
++        images = np.vstack(img_list)
++
++        # featurewise_center test
++        generator = image_data_generator.ImageDataGenerator(
++            rescale=rescale,
++            featurewise_center=True,
++            dtype='float64')
++        generator.fit(images)
++        batch = generator.flow(images, batch_size=8).next()
++        assert abs(np.mean(batch)) < 1e-6
++
++        # featurewise_std_normalization test
++        generator = image_data_generator.ImageDataGenerator(
++            rescale=rescale,
++            featurewise_center=True,
++            featurewise_std_normalization=True,
++            dtype='float64')
++        generator.fit(images)
++        batch = generator.flow(images, batch_size=8).next()
++        assert abs(np.mean(batch)) < 1e-6
++        assert abs(1 - np.std(batch)) < 1e-5
++
++        # zca_whitening test
++        generator = image_data_generator.ImageDataGenerator(
++            rescale=rescale,
++            featurewise_center=True,
++            zca_whitening=True,
++            dtype='float64')
++        generator.fit(images)
++        batch = generator.flow(images, batch_size=8).next()
++        batch = np.reshape(batch,
++                           (batch.shape[0],
++                            batch.shape[1] * batch.shape[2] * batch.shape[3]))
++        # Y * Y_T = n * I, where Y = W * X
++        identity = np.dot(batch, batch.T) / batch.shape[0]
++        assert ((np.abs(identity) - np.identity(identity.shape[0]))
++                < 1e-6).all()
++
++
+ if __name__ == '__main__':
+     pytest.main([__file__])
+diff --git a/tests/image/utils_test.py b/tests/image/utils_test.py
+index 7fbac47..d954e1e 100644
+--- a/tests/image/utils_test.py
++++ b/tests/image/utils_test.py
+@@ -1,5 +1,7 @@
+ import numpy as np
+ import pytest
++import resource
++import PIL
+ 
+ from keras_preprocessing.image import utils
+ 
+@@ -20,6 +22,9 @@ def test_validate_filename(tmpdir):
+ def test_load_img(tmpdir):
+     filename_rgb = str(tmpdir / 'rgb_utils.png')
+     filename_rgba = str(tmpdir / 'rgba_utils.png')
++    filename_grayscale_8bit = str(tmpdir / 'grayscale_8bit_utils.png')
++    filename_grayscale_16bit = str(tmpdir / 'grayscale_16bit_utils.tiff')
++    filename_grayscale_32bit = str(tmpdir / 'grayscale_32bit_utils.tiff')
+ 
+     original_rgb_array = np.array(255 * np.random.rand(100, 100, 3),
+                                   dtype=np.uint8)
+@@ -31,6 +36,26 @@ def test_load_img(tmpdir):
+     original_rgba = utils.array_to_img(original_rgba_array, scale=False)
+     original_rgba.save(filename_rgba)
+ 
++    original_grayscale_8bit_array = np.array(255 * np.random.rand(100, 100, 1),
++                                             dtype=np.uint8)
++    original_grayscale_8bit = utils.array_to_img(original_grayscale_8bit_array,
++                                                 scale=False)
++    original_grayscale_8bit.save(filename_grayscale_8bit)
++
++    original_grayscale_16bit_array = np.array(
++        np.random.randint(-2147483648, 2147483647, (100, 100, 1)), dtype=np.int16
++    )
++    original_grayscale_16bit = utils.array_to_img(original_grayscale_16bit_array,
++                                                  scale=False, dtype='int16')
++    original_grayscale_16bit.save(filename_grayscale_16bit)
++
++    original_grayscale_32bit_array = np.array(
++        np.random.randint(-2147483648, 2147483647, (100, 100, 1)), dtype=np.int32
++    )
++    original_grayscale_32bit = utils.array_to_img(original_grayscale_32bit_array,
++                                                  scale=False, dtype='int32')
++    original_grayscale_32bit.save(filename_grayscale_32bit)
++
+     # Test that loaded image is exactly equal to original.
+ 
+     loaded_im = utils.load_img(filename_rgb)
+@@ -48,6 +73,27 @@ def test_load_img(tmpdir):
+     assert loaded_im_array.shape == (original_rgb_array.shape[0],
+                                      original_rgb_array.shape[1], 1)
+ 
++    loaded_im = utils.load_img(filename_grayscale_8bit, color_mode='grayscale')
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert loaded_im_array.shape == original_grayscale_8bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_8bit_array)
++
++    loaded_im = utils.load_img(filename_grayscale_16bit, color_mode='grayscale')
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int16')
++    assert loaded_im_array.shape == original_grayscale_16bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_16bit_array)
++    # test casting int16 image to float32
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert np.allclose(loaded_im_array, original_grayscale_16bit_array)
++
++    loaded_im = utils.load_img(filename_grayscale_32bit, color_mode='grayscale')
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int32')
++    assert loaded_im_array.shape == original_grayscale_32bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_32bit_array)
++    # test casting int32 image to float32
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert np.allclose(loaded_im_array, original_grayscale_32bit_array)
++
+     # Test that nothing is changed when target size is equal to original.
+ 
+     loaded_im = utils.load_img(filename_rgb, target_size=(100, 100))
+@@ -67,6 +113,24 @@ def test_load_img(tmpdir):
+     assert loaded_im_array.shape == (original_rgba_array.shape[0],
+                                      original_rgba_array.shape[1], 1)
+ 
++    loaded_im = utils.load_img(filename_grayscale_8bit, color_mode='grayscale',
++                               target_size=(100, 100))
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert loaded_im_array.shape == original_grayscale_8bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_8bit_array)
++
++    loaded_im = utils.load_img(filename_grayscale_16bit, color_mode='grayscale',
++                               target_size=(100, 100))
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int16')
++    assert loaded_im_array.shape == original_grayscale_16bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_16bit_array)
++
++    loaded_im = utils.load_img(filename_grayscale_32bit, color_mode='grayscale',
++                               target_size=(100, 100))
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int32')
++    assert loaded_im_array.shape == original_grayscale_32bit_array.shape
++    assert np.all(loaded_im_array == original_grayscale_32bit_array)
++
+     # Test down-sampling with bilinear interpolation.
+ 
+     loaded_im = utils.load_img(filename_rgb, target_size=(25, 25))
+@@ -83,6 +147,21 @@ def test_load_img(tmpdir):
+     loaded_im_array = utils.img_to_array(loaded_im)
+     assert loaded_im_array.shape == (25, 25, 1)
+ 
++    loaded_im = utils.load_img(filename_grayscale_8bit, color_mode='grayscale',
++                               target_size=(25, 25))
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert loaded_im_array.shape == (25, 25, 1)
++
++    loaded_im = utils.load_img(filename_grayscale_16bit, color_mode='grayscale',
++                               target_size=(25, 25))
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int16')
++    assert loaded_im_array.shape == (25, 25, 1)
++
++    loaded_im = utils.load_img(filename_grayscale_32bit, color_mode='grayscale',
++                               target_size=(25, 25))
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int32')
++    assert loaded_im_array.shape == (25, 25, 1)
++
+     # Test down-sampling with nearest neighbor interpolation.
+ 
+     loaded_im_nearest = utils.load_img(filename_rgb, target_size=(25, 25),
+@@ -98,6 +177,21 @@ def test_load_img(tmpdir):
+     assert loaded_im_array_nearest.shape == (25, 25, 4)
+     assert np.any(loaded_im_array_nearest != loaded_im_array)
+ 
++    loaded_im = utils.load_img(filename_grayscale_8bit, color_mode='grayscale',
++                               target_size=(25, 25), interpolation="nearest")
++    loaded_im_array = utils.img_to_array(loaded_im)
++    assert loaded_im_array.shape == (25, 25, 1)
++
++    loaded_im = utils.load_img(filename_grayscale_16bit, color_mode='grayscale',
++                               target_size=(25, 25), interpolation="nearest")
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int16')
++    assert loaded_im_array.shape == (25, 25, 1)
++
++    loaded_im = utils.load_img(filename_grayscale_32bit, color_mode='grayscale',
++                               target_size=(25, 25), interpolation="nearest")
++    loaded_im_array = utils.img_to_array(loaded_im, dtype='int32')
++    assert loaded_im_array.shape == (25, 25, 1)
++
+     # Check that exception is raised if interpolation not supported.
+ 
+     loaded_im = utils.load_img(filename_rgb, interpolation="unsupported")
+@@ -150,6 +244,17 @@ def test_array_to_img_and_img_to_array():
+     x = utils.img_to_array(img, data_format='channels_first')
+     assert x.shape == (1, height, width)
+ 
++    # grayscale 32-bit signed integer
++    x = np.array(
++        np.random.randint(-2147483648, 2147483647, (1, height, width)),
++        dtype=np.int32
++    )
++    img = utils.array_to_img(x, data_format='channels_first')
++    assert img.size == (width, height)
++
++    x = utils.img_to_array(img, data_format='channels_first')
++    assert x.shape == (1, height, width)
++
+     # Test tf data format
+     # Test RGB 3D
+     x = np.random.random((height, width, 3))
+@@ -175,6 +280,28 @@ def test_array_to_img_and_img_to_array():
+     x = utils.img_to_array(img, data_format='channels_last')
+     assert x.shape == (height, width, 1)
+ 
++    # grayscale 16-bit signed integer
++    x = np.array(
++        np.random.randint(-2147483648, 2147483647, (height, width, 1)),
++        dtype=np.int16
++    )
++    img = utils.array_to_img(x, data_format='channels_last')
++    assert img.size == (width, height)
++
++    x = utils.img_to_array(img, data_format='channels_last')
++    assert x.shape == (height, width, 1)
++
++    # grayscale 32-bit signed integer
++    x = np.array(
++        np.random.randint(-2147483648, 2147483647, (height, width, 1)),
++        dtype=np.int32
++    )
++    img = utils.array_to_img(x, data_format='channels_last')
++    assert img.size == (width, height)
++
++    x = utils.img_to_array(img, data_format='channels_last')
++    assert x.shape == (height, width, 1)
++
+     # Test invalid use case
+     with pytest.raises(ValueError):
+         x = np.random.random((height, width))  # not 3D
+@@ -201,5 +328,25 @@ def test_array_to_img_and_img_to_array():
+         img = utils.img_to_array(x, data_format='channels_last')
+ 
+ 
++def write_sample_image(tmpdir):
++    im = utils.array_to_img(np.random.rand(1, 1, 3))
++    path = str(tmpdir / 'sample_image.png')
++    utils.save_img(path, im)
++    return path
++
++
++def test_image_file_handlers_close(tmpdir):
++    path = write_sample_image(tmpdir)
++    max_open_files, _ = resource.getrlimit(resource.RLIMIT_NOFILE)
++    for i in range(max_open_files+1):
++        utils.load_img(path)
++
++
++def test_load_img_returns_image(tmpdir):
++    path = write_sample_image(tmpdir)
++    im = utils.load_img(path)
++    assert isinstance(im, PIL.Image.Image)
++
++
+ if __name__ == '__main__':
+     pytest.main([__file__])
+diff --git a/tests/text_test.py b/tests/text_test.py
+index e39aebb..c4d774f 100644
+--- a/tests/text_test.py
++++ b/tests/text_test.py
+@@ -2,7 +2,7 @@
+ import numpy as np
+ import pytest
+ 
+-import keras
++from tensorflow import keras
+ from keras_preprocessing import text
+ from collections import OrderedDict
+ 
+-- 
+2.30.2
+

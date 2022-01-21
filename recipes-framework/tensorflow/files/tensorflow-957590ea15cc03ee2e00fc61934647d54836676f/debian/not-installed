@@ -1,0 +1,11 @@
+usr/LICENSE
+usr/THIRD_PARTY_TF_C_LICENSES
+usr/bin/estimator_ckpt_converter
+usr/bin/import_pb_to_tensorboard
+usr/bin/saved_model_cli
+usr/bin/tf_upgrade_v2
+usr/bin/tflite_convert
+usr/bin/toco
+usr/bin/toco_from_protos
+usr/bin/tensorboard
+usr/bin/import_pb_to_tensorboard

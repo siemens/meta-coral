@@ -1,0 +1,37 @@
+--- a/third_party/systemlibs/jsoncpp.BUILD
++++ b/third_party/systemlibs/jsoncpp.BUILD
+@@ -5,8 +5,34 @@
+     visibility = ["//visibility:public"],
+ )
+ 
++HEADERS = [
++    "json/allocator.h",
++    "json/assertions.h",
++    "json/config.h",
++    "json/forwards.h",
++    "json/json_features.h",
++    "json/json.h",
++    "json/reader.h",
++    "json/value.h",
++    "json/version.h",
++    "json/writer.h",
++]
++
++genrule(
++    name = "link_headers",
++    outs = HEADERS,
++    cmd = """
++      for i in $(OUTS); do
++        i=$${i##*/}
++        ln -sf $(INCLUDEDIR)/jsoncpp/json/$$i $(@D)/json/$$i
++      done
++    """,
++)
++
+ cc_library(
+     name = "jsoncpp",
++    hdrs = HEADERS,
++    includes = ["."],
+     linkopts = ["-ljsoncpp"],
+     visibility = ["//visibility:public"],
+ )

@@ -1,0 +1,5 @@
+out
+build*
+build.sh
+shell.sh
+SBOM.spdx

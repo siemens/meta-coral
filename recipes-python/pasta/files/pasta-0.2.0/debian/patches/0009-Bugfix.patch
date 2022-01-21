@@ -1,0 +1,25 @@
+From 6fb0a42204f8d87b9730c97d4a4257c8ae45e596 Mon Sep 17 00:00:00 2001
+From: Nick Smith <smithnick@google.com>
+Date: Wed, 20 Jan 2021 06:49:01 -0800
+Subject: [PATCH 09/11] Bugfix
+
+---
+ pasta/base/annotate.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pasta/base/annotate.py b/pasta/base/annotate.py
+index 4ec3d3d..f8145a7 100644
+--- a/pasta/base/annotate.py
++++ b/pasta/base/annotate.py
+@@ -680,7 +680,7 @@ class BaseVisitor(ast.NodeVisitor):
+ 
+   @expression
+   def visit_NamedExpr(self, node):
+-    self.visit(target)
++    self.visit(node.target)
+     self.attr(node, 'equal', [self.ws, ':=', self.ws], default=' := ')
+     self.visit(node.value)
+ 
+-- 
+2.30.2
+

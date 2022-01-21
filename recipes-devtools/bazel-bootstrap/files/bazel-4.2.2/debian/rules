@@ -1,0 +1,39 @@
+#!/usr/bin/make -f
+# ---------------------------------------------------------------------------------------------------------------------
+# debian/rules file for bazel-bootstrap
+# Copyright (c) 2021, Mentor Graphics, a Siemens business
+# ---------------------------------------------------------------------------------------------------------------------
+
+export HOME = /home/builder/bazel-bootstrap
+export VERBOSE = yes
+export EXTRA_BAZEL_ARGS = --host_javabase=@local_jdk//:jdk \
+                          --compilation_mode opt
+
+# Some of the scripts assume python == python3 because they were
+# developped/tested on modern distributions such as bullseye.
+# Prepend PATH with a directory where we will place a python
+# symlink pointing to Python3
+export PATH := $(CURDIR)/.env/bin:$(PATH)
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_build:
+	mkdir -p .env/bin
+	ln -s /usr/bin/python3 .env/bin/python
+	./compile.sh
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf .env output
+
+override_dh_install:
+	install -m 0755 -d debian/tmp/etc/bazel
+	install -m 0644 debian/bazelrc debian/tmp/etc/bazel/bazelrc
+	install -m 0755 -d debian/tmp/usr/bin
+	install -m 0755 output/bazel debian/tmp/usr/bin/bazel-4
+	install -m 0755 scripts/packages/bazel.sh debian/tmp/usr/bin/bazel
+	dh_install
+
+override_dh_strip:
+	:

@@ -1,0 +1,67 @@
+--- /dev/null
++++ b/third_party/systemlibs/grpc.bazel.grpc.src.compiler.bzl
+@@ -0,0 +1,23 @@
++genrule(
++    name = "ln_grpc_cpp_plugin",
++    outs = ["grpc_cpp_plugin.bin"],
++    cmd = "ln -s $$(which grpc_cpp_plugin) $@",
++)
++
++sh_binary(
++    name = "grpc_cpp_plugin",
++    srcs = ["grpc_cpp_plugin.bin"],
++    visibility = ["//visibility:public"],
++)
++
++genrule(
++    name = "ln_grpc_python_plugin",
++    outs = ["grpc_python_plugin.bin"],
++    cmd = "ln -s $$(which grpc_python_plugin) $@",
++)
++
++sh_binary(
++    name = "grpc_python_plugin",
++    srcs = ["grpc_python_plugin.bin"],
++    visibility = ["//visibility:public"],
++)
+--- a/tensorflow/workspace2.bzl
++++ b/tensorflow/workspace2.bzl
+@@ -646,7 +646,7 @@
+         patch_file = "//third_party/grpc:generate_cc_env_fix.patch",
+         system_link_files = {
+             "//third_party/systemlibs:BUILD": "bazel/BUILD",
+-            "//third_party/systemlibs:grpc.BUILD": "src/compiler/BUILD",
++            "//third_party/systemlibs:grpc.bazel.grpc.src.compiler.bzl": "src/compiler/BUILD",
+             "//third_party/systemlibs:grpc.bazel.grpc_deps.bzl": "bazel/grpc_deps.bzl",
+             "//third_party/systemlibs:grpc.bazel.grpc_extra_deps.bzl": "bazel/grpc_extra_deps.bzl",
+             "//third_party/systemlibs:grpc.bazel.cc_grpc_library.bzl": "bazel/cc_grpc_library.bzl",
+--- a/third_party/systemlibs/grpc.BUILD
++++ b/third_party/systemlibs/grpc.BUILD
+@@ -50,27 +50,3 @@
+     ],
+     visibility = ["//visibility:public"],
+ )
+-
+-genrule(
+-    name = "ln_grpc_cpp_plugin",
+-    outs = ["grpc_cpp_plugin.bin"],
+-    cmd = "ln -s $$(which grpc_cpp_plugin) $@",
+-)
+-
+-sh_binary(
+-    name = "grpc_cpp_plugin",
+-    srcs = ["grpc_cpp_plugin.bin"],
+-    visibility = ["//visibility:public"],
+-)
+-
+-genrule(
+-    name = "ln_grpc_python_plugin",
+-    outs = ["grpc_python_plugin.bin"],
+-    cmd = "ln -s $$(which grpc_python_plugin) $@",
+-)
+-
+-sh_binary(
+-    name = "grpc_python_plugin",
+-    srcs = ["grpc_python_plugin.bin"],
+-    visibility = ["//visibility:public"],
+-)

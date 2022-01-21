@@ -1,0 +1,23 @@
+Source: opt-einsum
+Section: python
+Priority: optional
+Maintainer: Mentor Embedded <embedded_support@mentor.com>
+Build-Depends: debhelper-compat (= 12),
+               dh-python,
+               libpython3-all-dev,
+               python3-all-dev:any,
+               python3-numpy <!nocheck>,
+               python3-pytest <!nocheck>,
+               python3-setuptools
+Standards-Version: 4.5.0
+Rules-Requires-Root: no
+Homepage: https://github.com/dgasmith/opt_einsum
+
+Package: python3-opt-einsum
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends}
+Description: Python AST Augmentation
+ Enable python source code refactoring through AST modifications.
+ .
+ This package installs the library for Python 3.

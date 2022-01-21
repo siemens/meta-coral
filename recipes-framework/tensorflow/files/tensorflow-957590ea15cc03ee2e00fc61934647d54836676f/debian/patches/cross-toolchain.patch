@@ -1,0 +1,22 @@
+--- a/tensorflow/workspace2.bzl
++++ b/tensorflow/workspace2.bzl
+@@ -10,6 +10,7 @@
+ load("//third_party/py:python_configure.bzl", "python_configure")
+ load("//third_party/systemlibs:syslibs_configure.bzl", "syslibs_configure")
+ load("//third_party/toolchains/cpus/arm:arm_compiler_configure.bzl", "arm_compiler_configure")
++load("//local_toolchains/arm_linux_gnu:arm_compiler_configure.bzl", "system_arm_compiler_configure")
+ load("//third_party/toolchains/embedded/arm-linux:arm_linux_toolchain_configure.bzl", "arm_linux_toolchain_configure")
+ load("//third_party:repo.bzl", "tf_http_archive")
+ load("//third_party/clang_toolchain:cc_configure_clang.bzl", "cc_download_clang_toolchain")
+@@ -115,6 +116,11 @@
+         armhf_repo = "../armhf_linux_toolchain",
+     )
+ 
++    system_arm_compiler_configure(
++        name = "system_config_arm_compiler",
++        build_file = "//local_toolchains/arm_linux_gnu:BUILD",
++    )
++
+ # Define all external repositories required by TensorFlow
+ def _tf_repositories():
+     """All external dependencies for TF builds."""

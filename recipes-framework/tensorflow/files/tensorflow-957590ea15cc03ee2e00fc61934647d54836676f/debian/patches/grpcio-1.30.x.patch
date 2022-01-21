@@ -1,0 +1,49 @@
+--- a/tensorflow/tools/ci_build/release/common.sh
++++ b/tensorflow/tools/ci_build/release/common.sh
+@@ -147,7 +147,7 @@
+   "${PIP_CMD}" install --user --upgrade 'tb-nightly ~= 2.4.0.a'
+   "${PIP_CMD}" install --user --upgrade 'tensorflow_estimator ~= 2.4.0'
+   # Test dependencies
+-  "${PIP_CMD}" install --user 'grpcio ~= 1.34.0'
++  "${PIP_CMD}" install --user 'grpcio >= 1.30.0 , < 1.31.0'
+   "${PIP_CMD}" install --user 'portpicker ~= 1.3.1'
+   "${PIP_CMD}" install --user 'scipy ~= 1.5.2'
+   # LINT.ThenChange(:mac_pip_installations)
+@@ -204,7 +204,7 @@
+   ${PIP_CMD} install --user --upgrade 'tb-nightly ~= 2.4.0.a'
+   ${PIP_CMD} install --user --upgrade 'tensorflow_estimator ~= 2.4.0'
+   # Test dependencies
+-  ${PIP_CMD} install --user 'grpcio ~= 1.34.0'
++  ${PIP_CMD} install --user 'grpcio >= 1.30.0 , < 1.31.0'
+   ${PIP_CMD} install --user 'portpicker ~= 1.3.1'
+   ${PIP_CMD} install --user 'scipy ~= 1.5.2'
+   # LINT.ThenChange(:mac_pip_installations)
+@@ -247,7 +247,7 @@
+   ${PIP_CMD} install --upgrade 'tb-nightly ~= 2.4.0.a'
+   ${PIP_CMD} install --upgrade 'tensorflow_estimator ~= 2.4.0'
+   # Test dependencies
+-  ${PIP_CMD} install 'grpcio ~= 1.34.0'
++  ${PIP_CMD} install 'grpcio >= 1.30.0 , < 1.31.0'
+   ${PIP_CMD} install 'portpicker ~= 1.3.1'
+   ${PIP_CMD} install 'scipy ~= 1.5.2'
+   ${PIP_CMD} install --upgrade certifi
+@@ -294,7 +294,7 @@
+   ${PIP_CMD} install --upgrade 'tb-nightly ~= 2.4.0.a' --user
+   ${PIP_CMD} install --upgrade 'tensorflow_estimator ~= 2.4.0' --user
+   # Test dependencies
+-  ${PIP_CMD} install 'grpcio ~= 1.34.0' --user
++  ${PIP_CMD} install 'grpcio >= 1.30.0 , < 1.31.0' --user
+   ${PIP_CMD} install 'portpicker ~= 1.3.1' --user
+   ${PIP_CMD} install 'scipy ~= 1.5.2' --user
+   ${PIP_CMD} install --upgrade certifi --user
+--- a/tensorflow/tools/pip_package/setup.py
++++ b/tensorflow/tools/pip_package/setup.py
+@@ -127,7 +127,7 @@
+ # BoringSSL support.
+ # See https://github.com/tensorflow/tensorflow/issues/17882.
+ if sys.byteorder == 'little':
+-  REQUIRED_PACKAGES.append('grpcio ~= 1.34.0')
++  REQUIRED_PACKAGES.append('grpcio >= 1.30.0 , < 1.31.0')
+ 
+ 
+ # Packages which are only needed for testing code.

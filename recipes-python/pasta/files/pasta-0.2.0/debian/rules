@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+export DH_VERBOSE=1
+export PYBUILD_VERBOSE=1
+export PYBUILD_NAME=pasta
+
+ifneq ($(filter nocheck,$(DEB_BUILD_PROFILES)),)
+export PYBUILD_DISABLE=test
+endif
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild

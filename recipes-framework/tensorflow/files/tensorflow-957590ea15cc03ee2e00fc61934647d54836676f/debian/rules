@@ -1,0 +1,289 @@
+#!/usr/bin/make -f
+
+#
+# Copyright (c) 2021, Mentor Graphics, a Siemens business
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+include /usr/share/dpkg/architecture.mk
+include /usr/share/dpkg/pkg-info.mk
+
+# ---------------------------------------------------------------------------------------------------------------------
+# External sources
+# ---------------------------------------------------------------------------------------------------------------------
+
+# List repositories to be sync'ed and copied to local/ before creating the source tarball
+EXTERNAL_SOURCES = \
+		   arm_neon_2_x86_sse					\
+		   astunparse_license				\
+		   bazel_skylib						\
+		   bazel_toolchains					\
+		   bazel_tools						\
+		   boringssl						\
+		   build_bazel_rules_android				\
+		   build_bazel_apple_support				\
+		   build_bazel_rules_apple				\
+		   build_bazel_rules_swift				\
+		   clog							\
+		   com_github_googlecloudplatform_google_cloud_cpp	\
+		   com_google_absl					\
+		   com_google_googleapis				\
+		   com_googlesource_code_re2				\
+		   cpuinfo						\
+		   cython						\
+		   dill_archive						\
+		   dlpack						\
+		   eigen_archive					\
+		   envoy_api						\
+		   enum34_archive					\
+		   farmhash_archive					\
+                   fft2d						\
+		   functools32_archive					\
+		   gemmlowp						\
+		   highwayhash					\
+		   icu							\
+		   io_bazel_rules_closure				\
+		   io_bazel_rules_docker				\
+		   io_bazel_rules_go					\
+				go_sdk						\
+		   io_bazel_rules_python				\
+		   kissfft						\
+		   llvm-project					\
+		   lmdb							\
+		   mkl_dnn						\
+		   mkl_dnn_v1					\
+		   org_python_license					\
+		   org_python_pypi_backports_weakref			\
+		   org_sqlite						\
+		   rules_cc						\
+		   rules_java						\
+		   rules_proto						\
+		   rules_python						\
+                   ruy							\
+                   six_archive						\
+                   sobol_data						\
+		   tblib_archive					\
+		   termcolor_archive					\
+		   typing_extensions_archive				\
+                   upb							\
+		   wrapt
+
+# ---------------------------------------------------------------------------------------------------------------------
+# System dependencies
+# ---------------------------------------------------------------------------------------------------------------------
+
+# See thirdparty/systemlibs/syslibs_configure.bzl for a list of system libraries we may use in lieu of copies
+# fetched/placed in external/ during the build
+SYSTEM_LIBS = com_github_grpc_grpc \
+              com_google_protobuf  \
+              curl                 \
+              double_conversion    \
+              gast_archive         \
+              gif                  \
+              libjpeg_turbo        \
+              nasm                 \
+              nsync                \
+              snappy               \
+              zlib                 \
+              png                  \
+              pasta                \
+              astunparse_archive   \
+              flatbuffers          \
+              absl_py              \
+              opt_einsum_archive   \
+              jsoncpp_git          \
+              pybind11
+
+# Comma separated list of system libraries
+system_libs = $(subst $(space),$(comma),$(strip $(foreach l,$(SYSTEM_LIBS),$(l))))
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Build settings
+# ---------------------------------------------------------------------------------------------------------------------
+
+export DEB_BUILD_MAINT_OPTIONS     = hardening=+all
+export TF_NEED_CUDA                = 0
+export TF_NEED_TENSORRT            = 0
+export TF_NEED_ROCM                = 0
+export TF_CONFIGURE_IOS            = 0
+export TF_DOWNLOAD_CLANG           = 0
+export TF_SET_ANDROID_WORKSPACE    = 0
+export TF_IGNORE_MAX_BAZEL_VERSION = 1
+export CC_OPT_FLAGS                = -Wno-sign-compare
+export PYTHON_BIN_PATH             = /usr/bin/python3
+export PYTHON_LIB_PATH             = /usr/lib/python3/dist-packages
+export CROSSTOOL_PYTHON_INCLUDE_PATH = /usr/include/python3.9
+
+export CUSTOM_BAZEL_FLAGS =										\
+		--repo_env=TF_SYSTEM_LIBS=$(system_libs)                				\
+		$(foreach r,$(EXTERNAL_SOURCES),--override_repository=$(r)=$(CURDIR)/local/$(r))
+
+BUILD_TARGETS =
+ifeq ($(filter nofull,$(DEB_BUILD_PROFILES)),)
+	BUILD_TARGETS += //tensorflow/tools/lib_package:libtensorflow	 \
+					 //tensorflow/tools/pip_package:build_pip_package \
+					 //tensorflow:libtensorflow_cc.so
+endif
+
+PYTHON_WHL_PATHS = tensorflow/lite/tools/pip_package/gen/tflite_pip/python3/dist/*.whl
+ifeq ($(filter nofull,$(DEB_BUILD_PROFILES)),)
+		PYTHON_WHL_PATHS += debian/dist/*.whl
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Optimizations & Crossbuild
+# ---------------------------------------------------------------------------------------------------------------------
+
+# TODO: set platform specific optimization flags (like FPU, etc...)
+ifeq ($(DEB_HOST_ARCH),amd64)
+	export CC_OPT_FLAGS = -Wno-sign-compare -mavx -mavx2 -mfma -msse4.2
+else ifeq ($(DEB_HOST_ARCH),armhf)
+	CUSTOM_BAZEL_FLAGS += --cpu=armhf --crosstool_top=@system_config_arm_compiler//:toolchain
+else ifeq ($(DEB_HOST_ARCH),arm64)
+	CUSTOM_BAZEL_FLAGS += --cpu=aarch64 --crosstool_top=@system_config_arm_compiler//:toolchain
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Miscellaneous
+# ---------------------------------------------------------------------------------------------------------------------
+
+null  :=
+space := $(null) #
+comma := ,
+
+# Make bazel place its cache and build artifacts in ".."
+export HOME = $(patsubst %/,%,$(dir $(CURDIR)))
+
+# Some of the scripts assume python == python3 (despite the above
+# settings), hence prepend PATH with a directory where we will place
+# a python symlink pointing to Python3
+export PATH := $(CURDIR)/.env/bin:$(PATH)
+
+# Use bash as our SHELL
+export SHELL:=/bin/bash
+export SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
+
+# Let GNU make run all commands in a single shell
+.ONESHELL:
+
+# Name of our Python package
+export PYBUILD_NAME = tensorflow
+
+# remove .bazelversion so we may use the latest version
+bazel_update_version = rm -f .bazelversion
+
+# remove files generated by the build
+clean_cmds = rm -rf .env bazel-* debian/dist debian/tmp
+
+# use invalid proxies to make sure we do not need to fetch anything
+set_invalid_proxies =                                            \
+	export ftp_proxy=http://127.0.0.1:1;                     \
+	export http_proxy=http://127.0.0.1:1;                    \
+	export https_proxy=http://127.0.0.1:1;
+
+prepare_bazel_env =   \
+	mkdir -p .env/bin; \
+	ln -sf /usr/bin/python3 .env/bin/python; \
+	ln -sf $(CURDIR)/debian/bazel-batch.sh .env/bin/bazel;
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Rules
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Catch all
+%:
+	dh $@ --with python3
+
+# configure using tensorflow's custom configure script (not autoconf based)
+override_dh_auto_configure:
+	./configure
+
+# build using bazel
+override_dh_auto_build:
+	$(bazel_update_version)
+	$(prepare_bazel_env)
+	$(set_invalid_proxies)
+	:
+	# perform the actual build
+	mkdir -p $(CURDIR)/debian/dist
+	bazel build -s \
+		--config=opt                                           		\
+		--config=noaws                                         		\
+		--distdir=$(CURDIR)/debian/dist                        		\
+		--repository_cache=                                    		\
+		--verbose_failures                                     		\
+										\
+		$(CUSTOM_BAZEL_FLAGS)			\
+		$(BUILD_TARGETS)
+
+ifeq ($(filter nofull,$(DEB_BUILD_PROFILES)),)
+	# build a Python wheel package
+	./bazel-bin/tensorflow/tools/pip_package/build_pip_package debian/dist
+endif
+	# also build a wheel package for tflite
+	./tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
+
+override_dh_python3:
+	dh_python3 --no-ext-rename
+
+# this rule is only used when the source tarball does not include local copies of the external
+# projects we are depending on
+.PHONY: local
+local:
+	$(prepare_bazel_env)
+	$(bazel_update_version)
+	bazel sync $(foreach r,$(EXTERNAL_SOURCES),--only=$(r))
+	mkdir -p $(@)
+	$(foreach r,$(EXTERNAL_SOURCES),						\
+		echo "# importing $(r) from bazel cache to $(@)/..." &&			\
+		mv $(HOME)/.cache/bazel/_bazel_root/*/external/$(r) $(@)/ && )		\
+	symlinks -cr .
+
+override_dh_auto_clean:
+	dh_auto_clean
+	$(clean_cmds)
+
+override_dh_auto_test:
+	# no build-time tests
+
+# deploy build artefacts to debian/tmp
+override_dh_install:
+	$(set_invalid_proxies)
+ifeq ($(filter nofull,$(DEB_BUILD_PROFILES)),)
+	install -m 0755 -d debian/tmp/usr/lib/$(DEB_TARGET_GNU_TYPE)/pkgconfig
+	# extract generated library package
+	tar -C debian/tmp/usr -zxf bazel-out/k8-opt/bin/tensorflow/tools/lib_package/libtensorflow.tar.gz
+	rm -fv debian/tmp/usr/lib/lib*.so.2
+	# move libraries to arch-specific path
+	mv debian/tmp/usr/lib/*.so* debian/tmp/usr/lib/$(DEB_TARGET_GNU_TYPE)/
+	# copy all libraries over so we get C++ APIs installed
+	cp -a bazel-out/k8-opt/bin/tensorflow/lib*.so* debian/tmp/usr/lib/$(DEB_TARGET_GNU_TYPE)/
+	# get rid of spurious .params files
+	rm -fv debian/tmp/usr/lib/*/lib*.params
+	# generate .pc files
+	(cd debian/tmp/usr/lib/$(DEB_TARGET_GNU_TYPE)/pkgconfig && \
+		$(CURDIR)/tensorflow/c/generate-pc.sh \
+		-p /usr -l lib/$(DEB_TARGET_GNU_TYPE) -v $(DEB_VERSION_UPSTREAM))
+endif
+	# and install it (skip dependencies so we don't require an Internet connection)
+	pip3 install									\
+		--prefix /usr								\
+		--root debian/tmp							\
+		--no-warn-script-location					\
+		--no-deps									\
+		$(PYTHON_WHL_PATHS)
+	:
+ifeq ($(filter nofull,$(DEB_BUILD_PROFILES)),)
+	# will use libtensorflow_framework.so.2 from our libtensorflow-framework2 package
+	rm -fv debian/tmp/usr/lib/python3*/*-packages/tensorflow/libtensorflow_framework.so.2
+endif
+	# move to dist-packages for consistency with other Python packages provided by Debian
+	(cd debian/tmp/usr/lib/python3*/site-packages/.. && mv site-packages dist-packages)
+	# now let debhelper do its thing...
+	dh_install

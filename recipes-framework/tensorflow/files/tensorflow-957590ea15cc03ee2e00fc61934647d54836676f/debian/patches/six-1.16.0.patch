@@ -1,0 +1,85 @@
+--- a/tensorflow/tools/ci_build/release/common.sh
++++ b/tensorflow/tools/ci_build/release/common.sh
+@@ -125,7 +125,7 @@
+   # deps depend on numpy without an upper bound, we must install numpy before
+   # everything else.
+   # TODO(mihaimaruseac): Convert to requirements.txt
+-  "${PIP_CMD}" install --user 'numpy ~= 1.19.2'
++  "${PIP_CMD}" install --user 'numpy ~= 1.19.5'
+   # Now, install the deps, as listed in setup.py
+   "${PIP_CMD}" install --user 'absl-py ~= 0.10'
+   "${PIP_CMD}" install --user 'astunparse ~= 1.6.3'
+@@ -135,7 +135,7 @@
+   "${PIP_CMD}" install --user 'keras_preprocessing ~= 1.1.2'
+   "${PIP_CMD}" install --user 'opt_einsum ~= 3.3.0'
+   "${PIP_CMD}" install --user 'protobuf >= 3.9.2'
+-  "${PIP_CMD}" install --user 'six ~= 1.15.0'
++  "${PIP_CMD}" install --user 'six ~= 1.16.0'
+   "${PIP_CMD}" install --user 'termcolor ~= 1.1.0'
+   "${PIP_CMD}" install --user 'typing_extensions ~= 3.7.4'
+   "${PIP_CMD}" install --user 'wheel ~= 0.35'
+@@ -182,7 +182,7 @@
+   # deps depend on numpy without an upper bound, we must install numpy before
+   # everything else.
+   # TODO(mihaimaruseac): Convert to requirements.txt
+-  ${PIP_CMD} install --user 'numpy ~= 1.19.2'
++  ${PIP_CMD} install --user 'numpy ~= 1.19.5'
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install --user 'absl-py ~= 0.10'
+   ${PIP_CMD} install --user 'astunparse ~= 1.6.3'
+@@ -192,7 +192,7 @@
+   ${PIP_CMD} install --user 'keras_preprocessing ~= 1.1.2'
+   ${PIP_CMD} install --user 'opt_einsum ~= 3.3.0'
+   ${PIP_CMD} install --user 'protobuf >= 3.9.2'
+-  ${PIP_CMD} install --user 'six ~= 1.15.0'
++  ${PIP_CMD} install --user 'six ~= 1.16.0'
+   ${PIP_CMD} install --user 'termcolor ~= 1.1.0'
+   ${PIP_CMD} install --user 'typing_extensions ~= 3.7.4'
+   ${PIP_CMD} install --user 'wheel ~= 0.35'
+@@ -225,7 +225,7 @@
+   # deps depend on numpy without an upper bound, we must install numpy before
+   # everything else.
+   # TODO(mihaimaruseac): Convert to requirements.txt
+-  ${PIP_CMD} install 'numpy ~= 1.19.2'
++  ${PIP_CMD} install 'numpy ~= 1.19.5'
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install 'absl-py ~= 0.10'
+   ${PIP_CMD} install 'astunparse ~= 1.6.3'
+@@ -235,7 +235,7 @@
+   ${PIP_CMD} install 'keras_preprocessing ~= 1.1.2'
+   ${PIP_CMD} install 'opt_einsum ~= 3.3.0'
+   ${PIP_CMD} install 'protobuf >= 3.9.2'
+-  ${PIP_CMD} install 'six ~= 1.15.0'
++  ${PIP_CMD} install 'six ~= 1.16.0'
+   ${PIP_CMD} install 'termcolor ~= 1.1.0'
+   ${PIP_CMD} install 'typing_extensions ~= 3.7.4'
+   ${PIP_CMD} install 'wheel ~= 0.35'
+@@ -272,7 +272,7 @@
+   # deps depend on numpy without an upper bound, we must install numpy before
+   # everything else.
+   # TODO(mihaimaruseac): Convert to requirements.txt
+-  ${PIP_CMD} install 'numpy ~= 1.19.2' --user
++  ${PIP_CMD} install 'numpy ~= 1.19.5' --user
+   # Now, install the deps, as listed in setup.py
+   ${PIP_CMD} install 'absl-py ~= 0.10' --user
+   ${PIP_CMD} install 'astunparse ~= 1.6.3' --user
+@@ -282,7 +282,7 @@
+   ${PIP_CMD} install 'keras_preprocessing ~= 1.1.2' --user
+   ${PIP_CMD} install 'opt_einsum ~= 3.3.0' --user
+   ${PIP_CMD} install 'protobuf >= 3.9.2' --user
+-  ${PIP_CMD} install 'six ~= 1.15.0' --user
++  ${PIP_CMD} install 'six ~= 1.16.0' --user
+   ${PIP_CMD} install 'termcolor ~= 1.1.0' --user
+   ${PIP_CMD} install 'typing_extensions ~= 3.7.4' --user
+   ${PIP_CMD} install 'wheel ~= 0.35' --user
+--- a/tensorflow/tools/pip_package/setup.py
++++ b/tensorflow/tools/pip_package/setup.py
+@@ -88,7 +88,7 @@
+     'keras_preprocessing ~= 1.1.2',
+     'opt_einsum ~= 3.3.0',
+     'protobuf >= 3.9.2',
+-    'six ~= 1.15.0',
++    'six ~= 1.16.0',
+     'termcolor ~= 1.1.0',
+     'typing_extensions ~= 3.7.4',
+     'wheel ~= 0.35',

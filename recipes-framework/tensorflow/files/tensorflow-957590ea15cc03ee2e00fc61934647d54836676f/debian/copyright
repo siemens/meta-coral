@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# debian/copyright file for bazel-bootstrap
+# Copyright (c) 2021, Mentor Graphics, a Siemens business
+# ---------------------------------------------------------------------------------------------------------------------
+# FIXME: include copyright/license notices for 3rd party code
+# ---------------------------------------------------------------------------------------------------------------------
+
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: bazel
+Upstream-Contact: bazel-dev@googlegroups.com
+Source: https://github.com/bazelbuild/bazel
+
+Files: *
+Copyright: 2002-2021 Google Inc.
+                     The Bazel Authors <bazel-dev@googlegroups.com>
+					 Anthony Bellissimo <twon33@gmail.com>
+					 Volker Braun <vbraun.name@gmail.com>
+					 Thomas Broyer <t.broyer@ltgt.net>
+					 Steven Dee <steven@choosemuse.com>
+					 Alan Donovan <adonovan@google.com>
+					 Thiago Farina <tfarina@chromium.org>
+					 Peter Foley <pefoley2@pefoley.com>
+					 Roland Huß <roland@jolokia.org>
+					 Erik Kuefler <ekuefler@gmail.com>
+					 liuhuahang <liuhuahang@zerus.co>
+					 David Mankin <dmankin@atlassian.com>
+					 Kamal Marhubi <kamal@marhubi.com>
+					 Carl Mastrangelo <carl-mastrangelo@users.noreply.github.com>
+					 Kyle Moffett <kyle@moffetthome.net>
+					 NicholasGorski <nicholasgorski@outlook.com>
+					 Allen Porter <allen.porter@gmail.com>
+					 Doug Rabson <dfr@rabson.org>
+					 David Santiago <david.santiago@gmail.com>
+					 John Shimek <varikin@gmail.com>
+					 Brian Silverman <bsilver16384@gmail.com>
+					 John Sullivan <john.t.sullivan@gmail.com>
+					 Topher <topher.the.geek@gmail.com>
+					 Zhong Wang <linuxerwang@gmail.com>
+					 Kevin Watts <kevinwwatts@gmail.com>
+					 Jie Yu <yujie.jay@gmail.com>
+					 Andrew Z Allen <me@andrewzallen.com>
+					 Ming Zhao <mzhao@luminatewireless.com>
+License: Apache-2.0
+
+Files: debian/*
+Copyright: 2021 Mentor Embedded, <embedded_support@mentor.com>
+License: Apache-2.0
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+ https://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian systems, the complete text of the Apache version 2.0 license
+ can be found in "/usr/share/common-licenses/Apache-2.0".

@@ -1,0 +1,93 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+stages:
+  - prepare
+  - build
+
+variables:
+  SSTATE_DIR: "/cache/meta-coral"
+  CCACHE_DIR: "/cache/meta-coral-ccache"
+  DL_DIR: "/cache/meta-coral-dl"
+  SSTATE_CLEANUP_PERIOD: "3"
+  DL_CLEANUP_PERIOD: "3"
+
+.kas-build:
+  stage: build
+  image: ghcr.io/siemens/kas/kas-isar:2.6.3
+  tags: [privileged]
+  variables:
+    KAS_TASK: "build"
+  after_script:
+   - find build/tmp/deploy/isar-apt -name *.deb
+   - cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/dists .
+   - cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/pool .
+
+  artifacts:
+    name: "kas-build-$CI_JOB_NAME"
+    paths:
+     - build/tmp/work/*/*/*/temp
+     - dists
+     - pool
+    expire_in: 1 day
+    when: always
+
+######## Build jobs ########
+
+cache-maintenance:
+  stage: prepare
+  image: ghcr.io/siemens/kas/kas-isar:2.6.3
+  tags: [privileged]
+  script:
+   - mkdir -p ${SSTATE_DIR} ${CCACHE_DIR} ${DL_DIR}
+   - du -hs ${SSTATE_DIR}
+   - find ${SSTATE_DIR} -name 'sstate*' -atime +${SSTATE_CLEANUP_PERIOD} -print -delete
+   - du -hs ${DL_DIR}
+   - find ${DL_DIR} -atime +${DL_CLEANUP_PERIOD} -print -delete
+   - du -hs ${CCACHE_DIR}
+
+reuse-compliant:
+  stage: prepare
+  image: python:latest
+  tags: [DOCKER, AWS]
+  variables:
+    http_proxy: $CODE_PROXY
+    https_proxy: $CODE_PROXY
+    no_proxy: 127.0.0.1,localhost,.siemens.de,.siemens.net,.siemens.com,.siemens.io,s3.dualstack.eu-central-1.amazonaws.com
+  before_script:
+    - python3 -m venv ../venv
+    - . ../venv/bin/activate
+    - pip3 install reuse
+    - git clean -f -d
+  script:
+    - reuse lint
+    - reuse spdx --output SBOM.spdx
+  artifacts:
+    name: "meta-coral-sbom"
+    paths:
+     - SBOM.spdx
+
+meta-coral-amd64:
+  extends:
+    - .kas-build
+  script:
+   - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml
+
+meta-coral-amd64-fulltf:
+  extends:
+    - .kas-build
+  script:
+   - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml:kas/opt/full-tensorflow.yml
+
+meta-coral-aarch64:
+  extends:
+    - .kas-build
+  script:
+    - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml:kas/opt/aarch64-target.yml

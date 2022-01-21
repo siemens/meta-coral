@@ -1,0 +1,17 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+header:
+  version: 10
+
+target: tensorflow
+
+local_conf_header:
+  tflite_only: |
+    TENSORFLOW_LITEONLY = "0"

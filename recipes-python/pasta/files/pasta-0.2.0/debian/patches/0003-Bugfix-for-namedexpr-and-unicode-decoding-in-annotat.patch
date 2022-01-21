@@ -1,0 +1,169 @@
+From 2524f1c820d04e57668b28695f3a26c6793d418b Mon Sep 17 00:00:00 2001
+From: Nick Smith <smithnick@google.com>
+Date: Fri, 19 Jun 2020 10:58:29 -0700
+Subject: [PATCH 03/11] Bugfix for namedexpr and unicode decoding in
+ annotate_test
+
+---
+ pasta/base/annotate.py                        | 2 +-
+ pasta/base/annotate_test.py                   | 3 ++-
+ testdata/ast/golden/2.7/classdef.out          | 2 +-
+ testdata/ast/golden/2.7/functiondef.out       | 2 +-
+ testdata/ast/golden/2.7/trailing_comments.out | 4 ++--
+ testdata/ast/golden/3.7/classdef.out          | 2 +-
+ testdata/ast/golden/3.7/functiondef.out       | 2 +-
+ testdata/ast/golden/3.7/if.out                | 6 +++---
+ testdata/ast/golden/3.7/trailing_comments.out | 4 ++--
+ 9 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/pasta/base/annotate.py b/pasta/base/annotate.py
+index 561246a..7280a1d 100644
+--- a/pasta/base/annotate.py
++++ b/pasta/base/annotate.py
+@@ -682,7 +682,7 @@ class BaseVisitor(ast.NodeVisitor):
+   @expression
+   def visit_NamedExpr(self, node):
+     self.visit(target)
+-    self.attr(node, 'equal' % i, [self.ws, ':=', self.ws], default=' := ')
++    self.attr(node, 'equal', [self.ws, ':=', self.ws], default=' := ')
+     self.visit(node.value)
+ 
+   @statement
+diff --git a/pasta/base/annotate_test.py b/pasta/base/annotate_test.py
+index cfc251d..7b04837 100644
+--- a/pasta/base/annotate_test.py
++++ b/pasta/base/annotate_test.py
+@@ -22,6 +22,7 @@ import _ast
+ import ast
+ import difflib
+ import inspect
++import io
+ import itertools
+ import os.path
+ from six import with_metaclass
+@@ -368,7 +369,7 @@ class PrefixSuffixGoldenTestMeta(type):
+           return
+ 
+         try:
+-          with open(golden_file, 'r') as f:
++          with io.open(golden_file, 'r', encoding='UTF-8') as f:
+             golden = f.read()
+         except IOError:
+           self.fail('Missing golden data.')
+diff --git a/testdata/ast/golden/2.7/classdef.out b/testdata/ast/golden/2.7/classdef.out
+index d24f38a..16ea3c7 100644
+--- a/testdata/ast/golden/2.7/classdef.out
++++ b/testdata/ast/golden/2.7/classdef.out
+@@ -10,7 +10,7 @@
+ (6, 20)      Name f               	prefix=||	suffix=||	indent=||
+ (7, 2)       Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (4, 1)       Name b               	prefix=||	suffix=||	indent=||
+-(5, 0)       Call                 	prefix=||	suffix=||	indent=||
++(5, 1)       Call                 	prefix=||	suffix=||	indent=||
+ (10, 2)      Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (13, 2)      Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (15, 8)      Name j               	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/2.7/functiondef.out b/testdata/ast/golden/2.7/functiondef.out
+index 9de4ad4..67168ee 100644
+--- a/testdata/ast/golden/2.7/functiondef.out
++++ b/testdata/ast/golden/2.7/functiondef.out
+@@ -16,7 +16,7 @@
+ (10, 2)      Return               	prefix=|  |	suffix=|\n|	indent=|  |
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+ (16, 2)      Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+-(12, 0)      Call                 	prefix=||	suffix=||	indent=||
++(12, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (13, 1)      Name p               	prefix=||	suffix=||	indent=||
+ (14, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/2.7/trailing_comments.out b/testdata/ast/golden/2.7/trailing_comments.out
+index fde412e..4dcc368 100644
+--- a/testdata/ast/golden/2.7/trailing_comments.out
++++ b/testdata/ast/golden/2.7/trailing_comments.out
+@@ -8,11 +8,11 @@
+ (3, 2)       Name b               	prefix=|( |	suffix=| )|	indent=||
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+ (8, 2)       Expr                 	prefix=|  |	suffix=|   # f\n|	indent=|  |
+-(5, 0)       Call                 	prefix=||	suffix=||	indent=||
++(5, 1)       Call                 	prefix=||	suffix=||	indent=||
+ (6, 1)       Name d               	prefix=||	suffix=||	indent=||
+ (13, 2)      Return               	prefix=|  |	suffix=|# j\n|	indent=|  |
+ (10, 1)      Name g               	prefix=||	suffix=||	indent=||
+-(11, 0)      Call                 	prefix=||	suffix=||	indent=||
++(11, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (15, 0)      Name k               	prefix=||	suffix=| |	indent=||
+ (16, 2)      Name l               	prefix=|( # l prefix\n  |	suffix=|   #  l\n)|	indent=||
+ (-1, -1)     Load                 	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/3.7/classdef.out b/testdata/ast/golden/3.7/classdef.out
+index d24f38a..16ea3c7 100644
+--- a/testdata/ast/golden/3.7/classdef.out
++++ b/testdata/ast/golden/3.7/classdef.out
+@@ -10,7 +10,7 @@
+ (6, 20)      Name f               	prefix=||	suffix=||	indent=||
+ (7, 2)       Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (4, 1)       Name b               	prefix=||	suffix=||	indent=||
+-(5, 0)       Call                 	prefix=||	suffix=||	indent=||
++(5, 1)       Call                 	prefix=||	suffix=||	indent=||
+ (10, 2)      Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (13, 2)      Pass                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (15, 8)      Name j               	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/3.7/functiondef.out b/testdata/ast/golden/3.7/functiondef.out
+index 8ea489c..575b96a 100644
+--- a/testdata/ast/golden/3.7/functiondef.out
++++ b/testdata/ast/golden/3.7/functiondef.out
+@@ -16,7 +16,7 @@
+ (10, 2)      Return               	prefix=|  |	suffix=|\n|	indent=|  |
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+ (16, 2)      Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+-(12, 0)      Call                 	prefix=||	suffix=||	indent=||
++(12, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (13, 1)      Name p               	prefix=||	suffix=||	indent=||
+ (14, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/3.7/if.out b/testdata/ast/golden/3.7/if.out
+index 217ef9b..53ba6fb 100644
+--- a/testdata/ast/golden/3.7/if.out
++++ b/testdata/ast/golden/3.7/if.out
+@@ -10,10 +10,10 @@
+ (7, 2)       Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+ (9, 3)       Name e               	prefix=||	suffix=||	indent=||
+ (10, 2)      Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+-(11, 5)      If                   	prefix=||	suffix=||	indent=||
++(11, 0)      If                   	prefix=||	suffix=||	indent=||
+ (18, 3)      Name m               	prefix=||	suffix=||	indent=||
+ (19, 2)      Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+-(20, 5)      If                   	prefix=||	suffix=||	indent=||
++(20, 0)      If                   	prefix=||	suffix=||	indent=||
+ (-1, -1)     Load                 	prefix=||	suffix=||	indent=||
+ (2, 2)       Name b               	prefix=||	suffix=||	indent=|  |
+ (-1, -1)     Load                 	prefix=||	suffix=||	indent=||
+@@ -23,7 +23,7 @@
+ (10, 2)      Name g               	prefix=||	suffix=||	indent=|  |
+ (11, 5)      Name h               	prefix=||	suffix=||	indent=||
+ (12, 2)      Expr                 	prefix=|  |	suffix=|\n|	indent=|  |
+-(13, 5)      If                   	prefix=||	suffix=||	indent=||
++(13, 0)      If                   	prefix=||	suffix=||	indent=||
+ (-1, -1)     Load                 	prefix=||	suffix=||	indent=||
+ (19, 2)      Name n               	prefix=||	suffix=||	indent=|  |
+ (20, 5)      Name o               	prefix=||	suffix=||	indent=||
+diff --git a/testdata/ast/golden/3.7/trailing_comments.out b/testdata/ast/golden/3.7/trailing_comments.out
+index fde412e..4dcc368 100644
+--- a/testdata/ast/golden/3.7/trailing_comments.out
++++ b/testdata/ast/golden/3.7/trailing_comments.out
+@@ -8,11 +8,11 @@
+ (3, 2)       Name b               	prefix=|( |	suffix=| )|	indent=||
+ (-1, -1)     arguments            	prefix=||	suffix=||	indent=||
+ (8, 2)       Expr                 	prefix=|  |	suffix=|   # f\n|	indent=|  |
+-(5, 0)       Call                 	prefix=||	suffix=||	indent=||
++(5, 1)       Call                 	prefix=||	suffix=||	indent=||
+ (6, 1)       Name d               	prefix=||	suffix=||	indent=||
+ (13, 2)      Return               	prefix=|  |	suffix=|# j\n|	indent=|  |
+ (10, 1)      Name g               	prefix=||	suffix=||	indent=||
+-(11, 0)      Call                 	prefix=||	suffix=||	indent=||
++(11, 1)      Call                 	prefix=||	suffix=||	indent=||
+ (15, 0)      Name k               	prefix=||	suffix=| |	indent=||
+ (16, 2)      Name l               	prefix=|( # l prefix\n  |	suffix=|   #  l\n)|	indent=||
+ (-1, -1)     Load                 	prefix=||	suffix=||	indent=||
+-- 
+2.30.2
+

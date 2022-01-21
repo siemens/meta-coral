@@ -1,0 +1,27 @@
+From 04d1b06936a3fbb185395785a3e618ee70da1805 Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Mon, 3 Jan 2022 12:17:49 +0100
+Subject: [PATCH 1/2] feat: add support to use system cross-compiler
+
+---
+ WORKSPACE | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/WORKSPACE b/WORKSPACE
+index 4b44eb2..f89e323 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -67,3 +67,10 @@ new_local_repository(
+ 
+ load("@org_tensorflow//third_party/py:python_configure.bzl", "python_configure")
+ python_configure(name = "local_config_python")
++
++load("//local_toolchains/arm_linux_gnu:arm_compiler_configure.bzl", "system_arm_compiler_configure")
++
++system_arm_compiler_configure(
++    name = "system_config_arm_compiler",
++    build_file = "//local_toolchains/arm_linux_gnu:BUILD",
++)
+-- 
+2.30.2
+

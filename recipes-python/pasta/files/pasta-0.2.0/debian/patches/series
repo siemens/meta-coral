@@ -1,0 +1,10 @@
+0001-Add-test-for-ast-node-support.patch
+0002-Support-reading-BOM-at-beginning-of-a-module.patch
+0003-Bugfix-for-namedexpr-and-unicode-decoding-in-annotat.patch
+0004-Bugfix-for-parsing-fstrings-in-multiple-parts-fixes-.patch
+0005-Small-cleanup-for-async-nodes.patch
+0006-Support-for-string-style-PEP-484-type-annotations-fi.patch
+0007-Enforce-license-header-for-all-files-88.patch
+0008-Travis-CI-Add-Python-3.9-to-the-tests-85.patch
+0009-Bugfix.patch
+0010-Add-test-goldens-for-python-3.9.patch

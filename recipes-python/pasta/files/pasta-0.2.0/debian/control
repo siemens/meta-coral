@@ -1,0 +1,33 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+Source: pasta
+Section: python
+Priority: optional
+Maintainer: Mentor Embedded <embedded_support@mentor.com>
+Build-Depends: debhelper-compat (= 12),
+               cmake,
+               dh-python,
+               libpython3-all-dev,
+               python3-all-dev:any,
+               python3-setuptools,
+               python3-six <!nocheck>
+Standards-Version: 4.5.0
+Rules-Requires-Root: no
+Homepage: https://github.com/simonpercivall/astunparse
+
+Package: python3-pasta
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends}
+Description: Python AST Augmentation
+ Enable python source code refactoring through AST modifications.
+ .
+ This package installs the library for Python 3.

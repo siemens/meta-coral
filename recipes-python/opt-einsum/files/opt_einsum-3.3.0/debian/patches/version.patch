@@ -1,0 +1,14 @@
+# imported by Mentor Embedded Linux
+Index: opt_einsum-3.3.0/setup.cfg
+===================================================================
+--- opt_einsum-3.3.0.orig/setup.cfg
++++ opt_einsum-3.3.0/setup.cfg
+@@ -23,6 +23,8 @@ max-line-length = 119
+ # Automatic version numbering scheme
+ VCS = git
+ style = pep440
++parentdir_prefix = opt_einsum-
+ versionfile_source = opt_einsum/_version.py
+ versionfile_build = opt_einsum/_version.py
+ tag_prefix = ''
++verbose = True

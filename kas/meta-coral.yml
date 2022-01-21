@@ -1,0 +1,47 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+header:
+  version: 10
+
+repos:
+  isar:
+    url: https://github.com/ilbers/isar
+    refspec: 80c0470dc9459089fc74652444de691625242495
+    layers:
+      meta:
+    patches:
+      deb-build-profiles:
+        repo: meta-coral
+        path: patches/isar/0001-add-support-for-debian-build-profiles-and-options.patch
+
+  meta-coral:
+
+build_system: isar
+machine: qemuamd64
+distro: debian-bullseye
+target:
+  - libedgetpu
+  - astunparse
+  - keras-preprocessing
+  - opt-einsum
+  - pasta
+  - python-absl
+  - python-gast
+  - bazel-bootstrap
+  - gasket-dkms
+  - tensorflow
+  - pycoral
+
+local_conf_header:
+  arch: |
+    DISTRO_ARCH = "amd64"
+  ccache: |
+    USE_CCACHE = "1"

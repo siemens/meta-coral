@@ -1,0 +1,36 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+Source: bazel
+Maintainer: Mentor Embedded <embedded_support@mentor.com>
+Section: devel
+Priority: optional
+Build-Depends: bash,
+               build-essential,
+               debhelper-compat (=11),
+               dh-python,
+               openjdk-11-jdk,
+               python3,
+               zip,
+               unzip
+
+Package: bazel-bootstrap
+Architecture: any
+Multi-Arch: same
+Depends: default-jdk,
+         ${shlibs:Depends}
+Description: Tool to automate software builds and tests
+ Supported build tasks include running compilers and linkers to produce
+ executable programs and libraries, and assembling deployable packages for
+ Android, iOS and other target environments. Bazel is similar to other tools
+ like Make, Ant, Gradle, Buck, Pants and Maven.
+ .
+ This package contains the bootstrap variant of Bazel and should only be
+ used on systems that do not have the full version of Bazel built yet.

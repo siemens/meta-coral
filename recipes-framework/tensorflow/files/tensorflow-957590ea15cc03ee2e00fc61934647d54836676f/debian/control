@@ -1,0 +1,203 @@
+#
+# Copyright (c) Siemens AG, 2022
+# Copyright (c) 2021, Mentor Graphics, a Siemens business
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+
+Source: tensorflow
+Maintainer: Mentor Embedded <embedded_support@mentor.com>
+Section: science
+Priority: optional
+Build-Depends: debhelper-compat (=13),
+               bazel-bootstrap:native (>= 3.5.1),
+               git,
+               dh-python,
+               libabsl-dev,
+               libcurl4-nss-dev,
+               libdouble-conversion-dev,
+               libgif-dev,
+               libgrpc++-dev (>= 1.23~),
+               libgrpc-dev (>= 1.23~),
+               libjsoncpp-dev,
+               libsnappy-dev,
+               libdnnl-dev [amd64 arm64 ppc64el s390x],
+               libnsync-dev,
+               libpng-dev,
+               libjpeg62-turbo-dev (>= 2.0~),
+               protobuf-compiler (>= 3.12~),
+               protobuf-compiler-grpc (>= 1.30~),
+               libprotobuf-dev (>= 3.8~),
+               libprotoc-dev (>= 3.8~),
+               libflatbuffers-dev (>= 1.12~),
+               pybind11-dev (>= 2.6.2~),
+               nasm,
+               libpython3-all-dev,
+               python3-all-dev:any,
+               python3-flatbuffers,
+               python3-future,
+               python3-keras:native,
+               python3-keras-applications:native,
+               python3-keras-preprocessing:native (>= 1.1.2),
+               python3-opt-einsum:native (>= 3.3.0),
+               python3-mock:native,
+               python3-numpy:native,
+               python3-pip:native,
+               python3-setuptools,
+               python3-tqdm:native,
+               python3-wheel:native,
+               python3-absl:native,
+               python3-protobuf:native (>= 3.9.2),
+               python3-astunparse:native (>= 1.6.3),
+               python3-gast:native (>= 0.3.3),
+               symlinks,
+               wget,
+               zlib1g-dev
+Standards-Version: 4.5.0
+Homepage: https://tensorflow.org/
+
+Package: libtensorflow-framework2
+Architecture: any
+Multi-Arch: same
+Section: libs
+Build-Profiles: <!nofull>
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Description: Computation using data flow graphs for scalable machine learning
+ TensorFlow is an open source software library for numerical computation
+ using data flow graphs. The graph nodes represent mathematical operations,
+ while the graph edges represent the multidimensional data arrays (tensors)
+ that flow between them. This flexible architecture enables you to deploy
+ computation to one or more CPUs or GPUs in a desktop, server, or mobile
+ device without rewriting code.
+ .
+ This package ships shared object libtensorflow_framework.so.2.0
+ .
+ A shared object which includes registration mechanisms for ops and
+ kernels. Does not include the implementations of any ops or kernels.
+ Instead, the library which loads libtensorflow_framework.so
+ (e.g. _pywrap_tensorflow_internal.so for Python, libtensorflow.so for the C
+ API) is responsible for registering ops with libtensorflow_framework.so. In
+ addition to this core set of ops, user libraries which are loaded (via
+ TF_LoadLibrary/tf.load_op_library) register their ops and kernels with this
+ shared object directly.
+ .
+ For example, from Python tf.load_op_library loads a custom op library (via
+ dlopen() on Linux), the library finds libtensorflow_framework.so (no
+ filesystem search takes place, since libtensorflow_framework.so has already
+ been loaded by pywrap_tensorflow) and registers its ops and kernels via
+ REGISTER_OP and REGISTER_KERNEL_BUILDER (which use symbols from
+ libtensorflow_framework.so), and pywrap_tensorflow can then use these
+ ops. Since other languages use the same libtensorflow_framework.so, op
+ libraries are language agnostic.
+
+Package: libtensorflow2
+Architecture: any
+Multi-Arch: same
+Section: libs
+Build-Profiles: <!nofull>
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libtensorflow-framework2 (= ${binary:Version})
+Description: Computation using data flow graphs for scalable machine learning (C)
+ TensorFlow is an open source software library for numerical computation
+ using data flow graphs. The graph nodes represent mathematical operations,
+ while the graph edges represent the multidimensional data arrays (tensors)
+ that flow between them. This flexible architecture enables you to deploy
+ computation to one or more CPUs or GPUs in a desktop, server, or mobile
+ device without rewriting code.
+ .
+ This package ships shared object libtensorflow.so.2.0, which exports
+ C API for TensorFlow (i.e. symbols named "*TF_*" or "*TFE_*").
+
+Package: libtensorflow-cc2
+Architecture: any
+Multi-Arch: same
+Section: libs
+Build-Profiles: <!nofull>
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libtensorflow-framework2 (= ${binary:Version})
+Description: Computation using data flow graphs for scalable machine learning (C++)
+ TensorFlow is an open source software library for numerical computation
+ using data flow graphs. The graph nodes represent mathematical operations,
+ while the graph edges represent the multidimensional data arrays (tensors)
+ that flow between them. This flexible architecture enables you to deploy
+ computation to one or more CPUs or GPUs in a desktop, server, or mobile
+ device without rewriting code.
+ .
+ This package ships shared object libtensorflow_cc.so.2.0, which exports
+ C++ API for TensorFlow (i.e. *tensorflow* *TF_* *TFE_* *pywrap_xla*).
+
+Package: libtensorflow-dev
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Build-Profiles: <!nofull>
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libtensorflow-framework2 (= ${binary:Version}),
+         libtensorflow2 (= ${binary:Version}),
+         libtensorflow-cc2 (= ${binary:Version})
+Description: Computation using data flow graphs for scalable machine learning (dev)
+ TensorFlow is an open source software library for numerical computation
+ using data flow graphs. The graph nodes represent mathematical operations,
+ while the graph edges represent the multidimensional data arrays (tensors)
+ that flow between them. This flexible architecture enables you to deploy
+ computation to one or more CPUs or GPUs in a desktop, server, or mobile
+ device without rewriting code.
+ .
+ This package ships C and C++ headers files for tensorflow.
+
+# TODO
+# tensorflow 2.4.1 requires tensorflow-estimator<2.5.0,>=2.4.0, which is not installed.
+
+Package: python3-tensorflow
+Architecture: any
+Multi-Arch: foreign
+Build-Profiles: <!nofull>
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         ${python3:Depends},
+         libtensorflow-framework2 (= ${binary:Version}),
+         python3-absl (>= 0.10.0),
+         python3-astunparse (>= 1.6.3),
+         python3-flatbuffers (>= 1.12.0),
+         python3-grpcio (>= 1.30.0),
+         python3-gast (>= 0.3.3),
+         python3-h5py (>= 2.10.0),
+         python3-numpy,
+         python3-opt-einsum (>= 3.3.0),
+         python3-pasta (>= 0.2.0),
+         python3-protobuf (>= 3.9.2),
+         python3-keras-preprocessing (>= 1.1.2),
+         python3-six,
+         python3-termcolor,
+         python3-typing-extensions (>= 3.7.4),
+         python3-wheel,
+         python3-wrapt
+Description: Computation using data flow graphs for scalable machine learning (Py3)
+ TensorFlow is an open source software library for numerical computation
+ using data flow graphs. The graph nodes represent mathematical operations,
+ while the graph edges represent the multidimensional data arrays (tensors)
+ that flow between them. This flexible architecture enables you to deploy
+ computation to one or more CPUs or GPUs in a desktop, server, or mobile
+ device without rewriting code.
+ .
+ This package ships Python3 interface of tensorflow.
+
+Package: python3-tflite-runtime
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         ${python3:Depends},
+         python3-numpy
+Description: TensorFlow Lite is for mobile and embedded devices.
+ TensorFlow Lite is the official solution for running machine learning models on
+ mobile and embedded devices. It enables on-device machine learning inference
+ with low latency and a small binary size on Android, iOS, and other operating
+ systems.

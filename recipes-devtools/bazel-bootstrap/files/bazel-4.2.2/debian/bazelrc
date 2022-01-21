@@ -1,0 +1,4 @@
+try-import /etc/bazel.bazelrc
+startup --install_base=/usr/share/bazel
+startup --trust_install_base
+build --host_javabase=@local_jdk//:jdk

@@ -1,0 +1,49 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: meta-coral
+Upstream-Contact: Felix Moessbauer <felix.moessbauer@siemens.com>
+Source: https://github.com/siemens/meta-coral
+License: MIT
+Copyright: 2022 Siemens AG
+
+Files: *
+Copyright: 2022 Siemens AG
+License: MIT
+
+Files: patches/ISAR/*
+Copyright: 2022 Siemens AG
+License: MIT
+
+Files: recipes-devtools/bazel-bootstrap/files/*
+Copyright: 2022 Siemens AG
+           2021, Mentor Graphics, a Siemens business
+License: Apache-2.0
+
+Files: recipes-framework/tensorflow/*
+Copyright: 2022 Siemens AG
+           2021, Mentor Graphics, a Siemens business
+License: MIT
+
+Files: recipes-devtools/bazel-toolchains/files/*
+Copyright: 2022 Siemens AG
+License: Apache-2.0
+
+Files: recipes-kernel/gasket-dkms/files/*
+Copyright: 2022 Siemens AG
+License: GPL-2.0-or-later
+
+Files: recipes-python/astunparse/files/*
+Copyright: 2022 Siemens AG
+License: BSD-3-Clause
+
+Files: recipes-python/pycoral/files/*
+Copyright: 2022 Siemens AG
+           2021, Mentor Graphics, a Siemens business
+License: Apache-2.0
+
+Files: recipes-python/python-absl/files/*
+Copyright: 2022 Siemens AG
+License: Apache-2.0
+
+Files: recipes-python/python-gast/files/*
+Copyright: 2022 Siemens AG
+License: BSD-3-Clause

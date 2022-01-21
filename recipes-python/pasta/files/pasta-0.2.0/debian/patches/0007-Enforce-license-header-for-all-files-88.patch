@@ -1,0 +1,545 @@
+From d61568e7cd885800cccdd5d10c231354480bd842 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Kamil=20Bregu=C5=82a?= <mik-laj@users.noreply.github.com>
+Date: Wed, 20 Jan 2021 15:13:15 +0100
+Subject: [PATCH 07/11] Enforce license header for all files (#88)
+
+* Add pre-commit configuration and docs
+
+* Add license headers
+---
+ .pre-commit-config.yaml            | 39 ++++++++++++++++++++++++++++++
+ .travis.yml                        | 33 ++++++++++++++++++++++---
+ CONTRIBUTING.md                    | 26 ++++++++++++++++++++
+ license-templates/LICENSE.txt      | 13 ++++++++++
+ pasta/__init__.py                  |  2 +-
+ pasta/augment/__init__.py          | 14 +++++++++++
+ pasta/augment/errors.py            |  2 +-
+ pasta/augment/import_utils.py      |  2 +-
+ pasta/augment/import_utils_test.py |  2 +-
+ pasta/augment/inline.py            |  2 +-
+ pasta/augment/inline_test.py       |  2 +-
+ pasta/augment/rename.py            |  2 +-
+ pasta/augment/rename_test.py       |  2 +-
+ pasta/base/__init__.py             | 14 +++++++++++
+ pasta/base/annotate.py             |  2 +-
+ pasta/base/annotate_test.py        |  2 +-
+ pasta/base/ast_constants.py        | 13 ++++++++++
+ pasta/base/ast_utils.py            |  2 +-
+ pasta/base/ast_utils_test.py       |  2 +-
+ pasta/base/codegen.py              |  2 +-
+ pasta/base/codegen_test.py         |  2 +-
+ pasta/base/formatting.py           |  2 +-
+ pasta/base/fstring_utils.py        |  2 +-
+ pasta/base/scope.py                |  2 +-
+ pasta/base/scope_test.py           |  2 +-
+ pasta/base/test_utils.py           |  2 +-
+ pasta/base/test_utils_test.py      | 16 +++++++++++-
+ pasta/base/token_generator.py      | 16 +++++++++++-
+ setup.py                           |  2 +-
+ 29 files changed, 199 insertions(+), 25 deletions(-)
+ create mode 100644 .pre-commit-config.yaml
+ create mode 100644 license-templates/LICENSE.txt
+
+diff --git a/.pre-commit-config.yaml b/.pre-commit-config.yaml
+new file mode 100644
+index 0000000..898850c
+--- /dev/null
++++ b/.pre-commit-config.yaml
+@@ -0,0 +1,39 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++---
++default_stages: [commit, push]
++minimum_pre_commit_version: "1.20.0"
++repos:
++  - repo: https://github.com/Lucas-C/pre-commit-hooks
++    rev: v1.1.9
++    hooks:
++      - id: insert-license
++        name: Add license for all YAML files
++        files: \.yaml$|\.yml$
++        args:
++          - --comment-style
++          - "|#|"
++          - --license-filepath
++          - license-templates/LICENSE.txt
++          - --fuzzy-match-generates-todo
++      - id: insert-license
++        name: Add license for all Python files
++        types: [python]
++        args:
++          - --comment-style
++          - "|#|"
++          - --license-filepath
++          - license-templates/LICENSE.txt
++          - --fuzzy-match-generates-todo
+diff --git a/.travis.yml b/.travis.yml
+index 9b2cde2..d4cc0ef 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -1,4 +1,22 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
+ language: python
++
++stages:
++  - pre-tests
++  - tests
+ python:
+   - "2.7"
+   - "3.4"
+@@ -6,7 +24,16 @@ python:
+   - "3.6"
+   - "3.7"
+   - "3.8"
+-before_script:
+-  - pip install flake8
+-  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
++
++jobs:
++  include:
++    - stage: pre-tests
++      install: pip install pre-commit==2.9.3
++      script: pre-commit run --all-files --show-diff-on-failure --color always
++      python: "3.9"
++    - stage: pre-tests
++      install: pip install flake8
++      script: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
++      python: "3.9"
++
+ script: python setup.py test
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+index ae319c7..55d7143 100644
+--- a/CONTRIBUTING.md
++++ b/CONTRIBUTING.md
+@@ -21,3 +21,29 @@ All submissions, including submissions by project members, require review. We
+ use GitHub pull requests for this purpose. Consult
+ [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
+ information on using pull requests.
++
++## Static checks
++
++This project is using [pre-commits](https://pre-commit.com) to ensure the quality of the code.
++We encourage you to use pre-commits, but it's not a required to contribute. Every change is checked
++on CI and if it does not pass the tests it cannot be accepted. If you want to check locally then
++you should install Python3.6 or newer together and run:
++```bash
++pip install pre-commit
++# or
++brew install pre-commit
++```
++For more installation options visit the [pre-commits](https://pre-commit.com).
++
++To turn on pre-commit checks for commit operations in git, run:
++```bash
++pre-commit install
++```
++To run all checks on your staged files, run:
++```bash
++pre-commit run
++```
++To run all checks on all files, run:
++```bash
++pre-commit run --all-files
++```
+diff --git a/license-templates/LICENSE.txt b/license-templates/LICENSE.txt
+new file mode 100644
+index 0000000..573599c
+--- /dev/null
++++ b/license-templates/LICENSE.txt
+@@ -0,0 +1,13 @@
++Copyright 2021 Google LLC
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    https://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
+diff --git a/pasta/__init__.py b/pasta/__init__.py
+index 2b07805..69ed857 100644
+--- a/pasta/__init__.py
++++ b/pasta/__init__.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Pasta enables AST-based transformations on python source code."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/__init__.py b/pasta/augment/__init__.py
+index e69de29..c3c623b 100644
+--- a/pasta/augment/__init__.py
++++ b/pasta/augment/__init__.py
+@@ -0,0 +1,14 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
+diff --git a/pasta/augment/errors.py b/pasta/augment/errors.py
+index bb2fb26..627c707 100644
+--- a/pasta/augment/errors.py
++++ b/pasta/augment/errors.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Errors that can occur during augmentation."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/import_utils.py b/pasta/augment/import_utils.py
+index 2cda69c..d232769 100644
+--- a/pasta/augment/import_utils.py
++++ b/pasta/augment/import_utils.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Functions for dealing with import statements."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/import_utils_test.py b/pasta/augment/import_utils_test.py
+index a1e626e..f81d4d6 100644
+--- a/pasta/augment/import_utils_test.py
++++ b/pasta/augment/import_utils_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for import_utils."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/inline.py b/pasta/augment/inline.py
+index b810199..8a91c83 100644
+--- a/pasta/augment/inline.py
++++ b/pasta/augment/inline.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Inline constants in a python module."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/inline_test.py b/pasta/augment/inline_test.py
+index cd71c71..8299a5e 100644
+--- a/pasta/augment/inline_test.py
++++ b/pasta/augment/inline_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for augment.inline."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/rename.py b/pasta/augment/rename.py
+index eff0775..45daad9 100644
+--- a/pasta/augment/rename.py
++++ b/pasta/augment/rename.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Rename names in a python module."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/augment/rename_test.py b/pasta/augment/rename_test.py
+index fe66d05..8251b49 100644
+--- a/pasta/augment/rename_test.py
++++ b/pasta/augment/rename_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for augment.rename."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/__init__.py b/pasta/base/__init__.py
+index e69de29..c3c623b 100644
+--- a/pasta/base/__init__.py
++++ b/pasta/base/__init__.py
+@@ -0,0 +1,14 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
+diff --git a/pasta/base/annotate.py b/pasta/base/annotate.py
+index 10dac25..4ec3d3d 100644
+--- a/pasta/base/annotate.py
++++ b/pasta/base/annotate.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Annotate python syntax trees with formatting from the source file."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/annotate_test.py b/pasta/base/annotate_test.py
+index 7b04837..7409084 100644
+--- a/pasta/base/annotate_test.py
++++ b/pasta/base/annotate_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for annotate."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/ast_constants.py b/pasta/base/ast_constants.py
+index c3ffad7..574ef03 100644
+--- a/pasta/base/ast_constants.py
++++ b/pasta/base/ast_constants.py
+@@ -1,4 +1,17 @@
+ """Constants relevant to ast code."""
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
+ 
+ import ast
+ 
+diff --git a/pasta/base/ast_utils.py b/pasta/base/ast_utils.py
+index 7cdf827..45baf65 100644
+--- a/pasta/base/ast_utils.py
++++ b/pasta/base/ast_utils.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Helpers for working with python ASTs."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/ast_utils_test.py b/pasta/base/ast_utils_test.py
+index d750fb8..138d569 100644
+--- a/pasta/base/ast_utils_test.py
++++ b/pasta/base/ast_utils_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for ast_utils."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/codegen.py b/pasta/base/codegen.py
+index 14c69fe..3b01e56 100644
+--- a/pasta/base/codegen.py
++++ b/pasta/base/codegen.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Generate code from an annotated syntax tree."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/codegen_test.py b/pasta/base/codegen_test.py
+index 8a0f6ac..a84997c 100644
+--- a/pasta/base/codegen_test.py
++++ b/pasta/base/codegen_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for generating code from a non-annotated ast."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/formatting.py b/pasta/base/formatting.py
+index 6f68b41..760a40b 100644
+--- a/pasta/base/formatting.py
++++ b/pasta/base/formatting.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Operations for storing and retrieving formatting info on ast nodes."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/fstring_utils.py b/pasta/base/fstring_utils.py
+index 57306e1..52c267d 100644
+--- a/pasta/base/fstring_utils.py
++++ b/pasta/base/fstring_utils.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Helpers for working with fstrings (python3.6+)."""
+-# Copyright 2019 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/scope.py b/pasta/base/scope.py
+index e7180f1..269377d 100644
+--- a/pasta/base/scope.py
++++ b/pasta/base/scope.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Perform static analysis on python syntax trees."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/scope_test.py b/pasta/base/scope_test.py
+index ffc5f62..75884c2 100644
+--- a/pasta/base/scope_test.py
++++ b/pasta/base/scope_test.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Tests for scope."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/test_utils.py b/pasta/base/test_utils.py
+index 2d45905..6f8023a 100644
+--- a/pasta/base/test_utils.py
++++ b/pasta/base/test_utils.py
+@@ -1,6 +1,6 @@
+ # coding=utf-8
+ """Useful stuff for tests."""
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/test_utils_test.py b/pasta/base/test_utils_test.py
+index f6dcc7a..e241f48 100644
+--- a/pasta/base/test_utils_test.py
++++ b/pasta/base/test_utils_test.py
+@@ -1,6 +1,20 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
+ # coding=utf-8
+ """Tests for google3.third_party.py.pasta.base.test_utils."""
+-# Copyright 2019 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/pasta/base/token_generator.py b/pasta/base/token_generator.py
+index b58276c..cfa8e73 100644
+--- a/pasta/base/token_generator.py
++++ b/pasta/base/token_generator.py
+@@ -1,10 +1,24 @@
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
+ # coding=utf-8
+ """Token generator for analyzing source code in logical units.
+ 
+ This module contains the TokenGenerator used for annotating a parsed syntax tree
+ with source code formatting.
+ """
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+diff --git a/setup.py b/setup.py
+index ba68ba3..0720a9d 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1,5 +1,5 @@
+ # coding=utf-8
+-# Copyright 2017 Google LLC
++# Copyright 2021 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+-- 
+2.30.2
+
