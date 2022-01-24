@@ -142,7 +142,8 @@ endif
 
 # TODO: set platform specific optimization flags (like FPU, etc...)
 ifeq ($(DEB_HOST_ARCH),amd64)
-	export CC_OPT_FLAGS = -Wno-sign-compare -mavx -mavx2 -mfma -msse4.2
+	CC_OPT_FLAGS = -Wno-sign-compare -mavx -mavx2 -mfma -msse4.2
+	CUSTOM_BAZEL_FLAGS += --config=avx2_linux
 else ifeq ($(DEB_HOST_ARCH),armhf)
 	CUSTOM_BAZEL_FLAGS += --cpu=armhf --crosstool_top=@system_config_arm_compiler//:toolchain
 else ifeq ($(DEB_HOST_ARCH),arm64)
@@ -213,7 +214,6 @@ override_dh_auto_build:
 	# perform the actual build
 	mkdir -p $(CURDIR)/debian/dist
 	bazel build -s \
-		--config=opt                                           		\
 		--config=noaws                                         		\
 		--distdir=$(CURDIR)/debian/dist                        		\
 		--repository_cache=                                    		\
