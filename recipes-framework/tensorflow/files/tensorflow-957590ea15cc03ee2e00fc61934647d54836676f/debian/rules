@@ -5,6 +5,7 @@
 # Copyright (c) Siemens AG, 2022
 #
 # Authors:
+#  Cedric Hombourger <cedric.hombourger@siemens.com>
 #  Felix Moessbauer <felix.moessbauer@siemens.com>
 #
 # This file is subject to the terms and conditions of the MIT License.
@@ -70,6 +71,7 @@ EXTERNAL_SOURCES = \
                    sobol_data						\
 		   tblib_archive					\
 		   termcolor_archive					\
+		   tf_toolchains					\
 		   typing_extensions_archive				\
                    upb							\
 		   wrapt

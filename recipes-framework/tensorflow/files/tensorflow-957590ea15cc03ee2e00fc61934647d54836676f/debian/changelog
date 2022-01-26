@@ -1,3 +1,9 @@
+tensorflow (2.5.2-2) stable; urgency=medium
+
+  * Prefetch and include tf_toolchains into the upstream tarball
+
+ -- Cedric Hombourger <cedric.hombourger@siemens.com>  Wed, 26 Jan 2022 21:14:00 +0100
+
 tensorflow (2.5.2-1) stable; urgency=medium
 
   * Package version 2.5.2
