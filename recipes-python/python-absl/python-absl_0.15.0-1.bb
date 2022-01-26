@@ -12,7 +12,7 @@
 inherit dpkg-gbp
 
 SRC_URI = " \
-    git://salsa.debian.org/python-team/packages/${PN}.git;protocol=https;branch=debian/latest \
+    git://salsa.debian.org/python-team/packages/python-absl.git;protocol=https;branch=debian/latest \
     file://0001-add-support-to-cross-compile-the-package.patch"
 SRCREV = "debian/${PV}"
 

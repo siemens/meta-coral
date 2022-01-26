@@ -25,6 +25,7 @@ SRC_URI[tf.sha256sum] = "8ebcbb9046074dca0309fddd53d58be5d76613cd2d69469a4779265
 DEPENDS += " \
     python3-keras-preprocessing \
     python3-absl \
+    ${@ 'python3-absl-host' if d.getVar('ISAR_CROSS_COMPILE') == '1' else '' } \
     python3-astunparse \
     python3-gast \
     python3-opt-einsum \
