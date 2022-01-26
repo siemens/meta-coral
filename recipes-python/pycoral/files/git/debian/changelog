@@ -1,3 +1,9 @@
+pycoral (2.0.0-2) stable; urgency=medium
+
+  * Prefetch and include tf_toolchains into the upstream tarball
+
+ -- Cedric Hombourger <cedric.hombourger@siemens.com>  Wed, 26 Jan 2022 22:06:00 +0100
+
 pycoral (2.0.0-1) stable; urgency=medium
 
   * Package 2.0.0 release

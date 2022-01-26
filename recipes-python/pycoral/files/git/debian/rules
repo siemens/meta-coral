@@ -1,7 +1,12 @@
 #!/usr/bin/make -f
 # ---------------------------------------------------------------------------------------------------------------------
 # debian/rules file for pycoral
+#
 # Copyright (c) 2021, Mentor Graphics, a Siemens business
+# Copyright (c) Siemens AG, 2022
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
 # ---------------------------------------------------------------------------------------------------------------------
 
 include /usr/share/dpkg/architecture.mk
@@ -46,6 +51,7 @@ EXTERNAL_SOURCES = \
 	pybind11 \
 	rules_cc \
 	rules_java \
+	tf_toolchains \
 	ruy \
 	upb
 
