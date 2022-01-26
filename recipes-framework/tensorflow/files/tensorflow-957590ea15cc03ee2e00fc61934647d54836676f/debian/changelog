@@ -1,8 +1,9 @@
 tensorflow (2.5.2-2) stable; urgency=medium
 
   * Prefetch and include tf_toolchains into the upstream tarball
+  * Exclude .env/ from the generated source archive
 
- -- Cedric Hombourger <cedric.hombourger@siemens.com>  Wed, 26 Jan 2022 21:14:00 +0100
+ -- Cedric Hombourger <cedric.hombourger@siemens.com>  Wed, 26 Jan 2022 21:23:00 +0100
 
 tensorflow (2.5.2-1) stable; urgency=medium
 
