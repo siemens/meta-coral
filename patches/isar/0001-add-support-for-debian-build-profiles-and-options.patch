@@ -1,7 +1,7 @@
 From ffe9b9e1c97bd9816e6be83effd4c4bcc7cde4ef Mon Sep 17 00:00:00 2001
 From: Felix Moessbauer <felix.moessbauer@siemens.com>
 Date: Thu, 16 Dec 2021 12:03:00 +0100
-Subject: [PATCH 1/1] add support for debian build profiles and options
+Subject: [PATCH 1/2] add support for debian build profiles and options
 
 This patch adds the bitbake variables DEB_BUILD_PROFILES and DEB_BUILD_OPTIONS.
 These are used to define the respective environment variables.
