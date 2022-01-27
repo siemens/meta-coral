@@ -1,0 +1,75 @@
+#
+# Copyright (c) Siemens AG, 2022
+#
+# Authors:
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
+#
+# This file is subject to the terms and conditions of the MIT License.
+# See COPYING.MIT file in the top-level directory.
+#
+
+name: CI
+
+on: [push]
+
+jobs:
+  reuse-compliant:
+    name: reuse compliance check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Check compliance
+        run: |
+          pip3 install --user reuse
+          reuse lint
+          reuse spdx --output SBOM.spdx
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v2
+        with:
+          name:  meta-coral-layer-sbom
+          path: SBOM.spdx
+
+  meta-coral-amd64:
+    name: packages for amd64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build image
+        run: ./kas-container build kas/meta-coral.yml
+      - name: Collect artifacts
+        run: |
+          find build/tmp/deploy/isar-apt -name *.deb
+          cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/dists .
+          cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/pool .
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name:  meta-coral-packages-amd64
+          path: |
+            build/tmp/work/*/*/*/temp
+            dists
+            pool
+
+  meta-coral-aarch64:
+    name: packages for aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build image
+        run: ./kas-container build kas/meta-coral.yml:kas/opt/aarch64-target.yml
+      - name: Collect artifacts
+        run: |
+          find build/tmp/deploy/isar-apt -name *.deb
+          cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/dists .
+          cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/pool .
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name:  meta-coral-packages-amd64
+          path: |
+            build/tmp/work/*/*/*/temp
+            dists
+            pool
