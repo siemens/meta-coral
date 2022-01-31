@@ -17,9 +17,13 @@ PR = "1"
 S  = "${WORKDIR}/opt_einsum-${PV}"
 
 GH_URI  = "https://github.com/dgasmith/opt_einsum/archive/refs/tags/v${PV}.tar.gz"
-SRC_URI = "${GH_URI} \
-           ${GH_URI};unpack=false;downloadfilename=${PN}_${PV}.orig.tar.gz \
+SRC_URI = "${GH_URI};unpack=false;downloadfilename=${PN}_${PV}.orig.tar.gz \
            file://opt_einsum-${PV}/debian"
 SRC_URI[sha256sum] = "a748fdbccfce5af420ea56f8e2c51a6dc9e8774afd9179cb8addfab159b7b33c"
 
 PROVIDES += "python3-${PN}"
+
+python do_unpack_append() {
+    from subprocess import check_call
+    check_call(["tar", "xzf", d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.gz"])
+}
