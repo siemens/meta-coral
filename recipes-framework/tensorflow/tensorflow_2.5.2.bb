@@ -45,3 +45,7 @@ PROVIDES += " \
     ${@ d.getVar('PROVIDES_FULL') if not d.getVar('TENSORFLOW_LITEONLY') == '1' else ''}"
 
 DEB_BUILD_PROFILES += "${@ 'nofull' if d.getVar('TENSORFLOW_LITEONLY') == '1' else ''}"
+
+python do_unpack_append() {
+    os.remove(d.getVar('S') + "/.bazelversion")
+}
