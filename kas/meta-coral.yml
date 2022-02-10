@@ -14,16 +14,9 @@ header:
 repos:
   isar:
     url: https://github.com/ilbers/isar
-    refspec: 80c0470dc9459089fc74652444de691625242495
+    refspec: ffdd1b0ce026d21c8b62c06c926d205aad3078b6
     layers:
       meta:
-    patches:
-      deb-build-profiles-0001:
-        repo: meta-coral
-        path: patches/isar/0001-add-support-for-debian-build-profiles-and-options.patch
-      deb-build-profiles-0002:
-        repo: meta-coral
-        path: patches/isar/0002-refactor-linux-custom.inc-to-use-ISAR-s-DEB_BUILD_PR.patch
 
   meta-coral:
 
