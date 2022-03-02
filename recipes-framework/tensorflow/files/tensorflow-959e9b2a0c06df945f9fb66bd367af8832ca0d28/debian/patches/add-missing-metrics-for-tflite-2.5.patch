@@ -1,4 +1,4 @@
-backport of https://github.com/tensorflow/tensorflow/pull/49199 (only for tf <= 2.5.2)
+backport of https://github.com/tensorflow/tensorflow/pull/49199 (only for tf <= 2.5)
 --- a/tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
 +++ b/tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
 @@ -48,6 +48,8 @@

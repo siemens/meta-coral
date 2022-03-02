@@ -20,7 +20,7 @@ PR = "1"
 S = "${WORKDIR}/${PN}-${TF_SRCREV}"
 SRC_URI += "https://github.com/tensorflow/tensorflow/archive/${TF_SRCREV}.tar.gz;name=tf \
            file://${PN}-${TF_SRCREV}/debian"
-SRC_URI[tf.sha256sum] = "8ebcbb9046074dca0309fddd53d58be5d76613cd2d69469a4779265f8482d2fb"
+SRC_URI[tf.sha256sum] = "e801615335eeb1f5bdc1427e692053cdf3a083749ca2b3ad4ad40f86495a0f40"
 
 DEPENDS += " \
     python3-keras-preprocessing \
