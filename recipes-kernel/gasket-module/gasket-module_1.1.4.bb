@@ -11,6 +11,6 @@
 require recipes-kernel/linux-module/module.inc
 require recipes-kernel/gasket-module/gasket-module-version.inc
 
-SRC_URI = "git://github.com/google/gasket-driver.git;protocol=https;branch=main"
+SRC_URI += "git://github.com/google/gasket-driver.git;protocol=https;branch=main"
 
 S = "${WORKDIR}/git/src"
