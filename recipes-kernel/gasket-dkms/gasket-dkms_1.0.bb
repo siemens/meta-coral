@@ -10,8 +10,8 @@
 # Files below ./files are licensed under the GPL-2.0-or-later license
 
 inherit dpkg
+require recipes-kernel/gasket-module/gasket-module-version.inc
 
-SRC_URI = "git://github.com/google/gasket-driver.git;protocol=https;branch=main;destsuffix=${P}"
-SRC_URI += "file://0001-add-section-and-priority-information.patch"
-# no releases yet
-SRCREV = "f047773516dd65435becf09d8d03e5ef2a9f4165"
+PR = "18"
+SRC_URI = "git://github.com/google/gasket-driver.git;protocol=https;branch=main;destsuffix=${P} \
+           file://0001-add-section-and-priority-information.patch"
