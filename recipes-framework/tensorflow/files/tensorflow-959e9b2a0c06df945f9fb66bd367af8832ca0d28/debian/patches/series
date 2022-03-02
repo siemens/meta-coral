@@ -5,4 +5,4 @@ six-1.16.0.patch
 cross-toolchain.patch
 fix-system-grpc-lib.patch
 fix-jsoncpp-path.patch
-add-missing-metrics-for-tflite-2.5.2.patch
+add-missing-metrics-for-tflite-2.5.patch

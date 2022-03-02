@@ -9,5 +9,5 @@
 #
 
 # exact tf version spec
-# v2.5.2
-TF_SRCREV = "957590ea15cc03ee2e00fc61934647d54836676f"
+# v2.5.3
+TF_SRCREV = "959e9b2a0c06df945f9fb66bd367af8832ca0d28"
