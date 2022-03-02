@@ -23,21 +23,12 @@ repos:
 build_system: isar
 machine: qemuamd64
 distro: debian-bullseye
-target:
-  - libedgetpu
-  - astunparse
-  - keras-preprocessing
-  - opt-einsum
-  - pasta
-  - python-absl
-  - python-gast
-  - bazel-bootstrap
-  - gasket-dkms
-  - tensorflow
-  - pycoral
+target: ci-meta-coral
 
 local_conf_header:
   arch: |
     DISTRO_ARCH = "amd64"
   ccache: |
     USE_CCACHE = "1"
+  kernel: |
+    KERNEL_NAME = "${DISTRO_ARCH}"
