@@ -5,6 +5,8 @@ include /usr/share/dpkg/buildtools.mk
 
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
+export TFROOT = ${TENSORFLOW_SRC_ROOT}
+
 LIBEDGETPU_BIN ?= out
 FILENAME := libedgetpu.so.1.0
 SONAME := libedgetpu.so.1
