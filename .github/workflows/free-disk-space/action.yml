@@ -3,6 +3,7 @@
 #
 # Authors:
 #  Quirin Gylstorff <quirin.gylstorff@siemens.com>
+#  Felix Moessbauer <felix.moessbauer@siemens.com>
 #
 # This file is subject to the terms and conditions of the MIT License.
 # See COPYING.MIT file in the top-level directory.
@@ -15,7 +16,9 @@ runs:
   steps:
       - name:  Free disk space
         run: |
+          sudo apt-get update
           sudo apt-get purge 'dotnet*' google-chrome-stable 'temurin*' google-cloud-sdk hhvm azure-cli 'mongodb*' powershell firefox chromium 'llvm*' 'libllvm*' 'adoptopenjdk*' 'mysql*' libgl1-mesa-dri apache2 'mono*'
+          sudo rm -rf /var/lib/apt/lists/*
           sudo rm -rf /usr/local/* /opt/hostedtoolcache /opt/pipx* /opt/az
         shell: bash
       - name: Show disk space usage
