@@ -1,3 +1,9 @@
+tensorflow (2.5.3-2) stable; urgency=medium
+
+  * replace libcurl4-nss-dev with libcurl4-openssl-dev
+
+ -- Felix Moessbauer <felix.moessbauer@siemens.com>  Wed, 04 May 2022 14:35:14 +0200
+
 tensorflow (2.5.3-1) stable; urgency=medium
 
   * Package version 2.5.3
