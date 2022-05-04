@@ -15,7 +15,7 @@ require tensorflow-src.inc
 # only build tflite python bindings instead of full TF
 TENSORFLOW_LITEONLY ?= "1"
 
-PR = "1"
+PR = "2"
 
 S = "${WORKDIR}/${PN}-${TF_SRCREV}"
 SRC_URI += "https://github.com/tensorflow/tensorflow/archive/${TF_SRCREV}.tar.gz;name=tf \
