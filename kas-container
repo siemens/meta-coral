@@ -2,12 +2,28 @@
 #
 # kas - setup tool for bitbake based projects
 #
-# Copyright (c) Siemens AG, 2018-2021
+# Copyright (c) Siemens AG, 2018-2022
 #
 # Authors:
 #  Jan Kiszka <jan.kiszka@siemens.com>
 #
-# SPDX-License-Identifier: MIT
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 set -e
 
@@ -15,14 +31,19 @@ usage()
 {
 	printf "%b" "Usage: $0 [OPTIONS] { build | checkout | shell } [KASOPTIONS] [KASFILE]\n"
 	printf "%b" "       $0 [OPTIONS] for-all-repos [KASOPTIONS] [KASFILE] COMMAND\n"
-	printf "%b" "       $0 [OPTIONS] clean\n"
+	printf "%b" "       $0 [OPTIONS] { clean | cleansstate | cleanall}\n"
 	printf "%b" "       $0 [OPTIONS] menu [KCONFIG]\n"
 	printf "%b" "\nPositional arguments:\n"
 	printf "%b" "build\t\t\tCheck out repositories and build target.\n"
 	printf "%b" "checkout\t\tCheck out repositories but do not build.\n"
 	printf "%b" "shell\t\t\tRun a shell in the build environment.\n"
 	printf "%b" "for-all-repos\t\tRun specified command in each repository.\n"
-	printf "%b" "clean\t\t\tClean build artifacts, keep downloads.\n"
+	printf "%b" "clean\t\t\tClean build artifacts, keep sstate cache and " \
+		    "downloads.\n"
+	printf "%b" "cleanstate\t\tClean build artifacts and sstate cache, " \
+		    "keep downloads.\n"
+	printf "%b" "cleanall\t\tClean build artifacts, sstate cache and " \
+		    "downloads.\n"
 	printf "%b" "menu\t\t\tProvide configuration menu and trigger " \
 		    "configured build.\n"
 	printf "%b" "\nOptional arguments:\n"
@@ -62,17 +83,49 @@ trace()
 }
 
 enable_isar_mode() {
+	if [ -n "${ISAR_MODE}" ]; then
+		return
+	fi
+	ISAR_MODE=1
+
 	KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas-isar"
 	KAS_ISAR_ARGS="--privileged"
 
+	SCHROOT_OVERLAY_DIR="${KAS_BUILD_DIR}/tmp/schroot-overlay"
+	trace mkdir -p "${SCHROOT_OVERLAY_DIR}"
+	KAS_ISAR_ARGS="${KAS_ISAR_ARGS} -v ${SCHROOT_OVERLAY_DIR}:/var/lib/schroot/union/overlay:rw"
+
 	if [ "${KAS_CONTAINER_ENGINE}" = "podman" ]; then
 		# sudo is needed for a privileged podman container
-		KAS_CONTAINER_COMMAND="sudo ${KAS_CONTAINER_COMMAND}"
-		KAS_ISAR_ARGS="${KAS_ISAR_ARGS} --pid=host"
+		KAS_CONTAINER_COMMAND="sudo --preserve-env ${KAS_CONTAINER_COMMAND}"
 	fi
 }
 
-KAS_IMAGE_VERSION_DEFAULT="2.6.3"
+run_clean() {
+	if [ -n "${KAS_ISAR_ARGS}" ]; then
+		set_container_image_var
+		# SC2086: Double quote to prevent globbing and word splitting.
+		# shellcheck disable=2086
+		trace ${KAS_CONTAINER_COMMAND} run -v "${KAS_BUILD_DIR}":/build:rw \
+				--workdir=/build --rm ${KAS_ISAR_ARGS} \
+				${KAS_CONTAINER_IMAGE} \
+				sudo rm -rf tmp
+	else
+		trace rm -rf "${KAS_BUILD_DIR}/tmp"
+	fi
+
+	if [ "$1" != "clean" ]; then
+		SSTATE_DIR=${SSTATE_DIR:-${KAS_BUILD_DIR}/sstate-cache}
+		trace rm -rf "${SSTATE_DIR}"
+
+		if [ "$1" = "cleanall" ]; then
+			DL_DIR=${DL_DIR:-${KAS_BUILD_DIR}/downloads}
+			trace rm -rf "${DL_DIR}"
+		fi
+	fi
+}
+
+KAS_IMAGE_VERSION_DEFAULT="3.0.2"
 KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
 KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
 
@@ -191,19 +244,9 @@ while [ $# -gt 0 ]; do
 	--*)
 		usage
 		;;
-	clean)
+	clean|cleansstate|cleanall)
 		[ $# -eq 1 ] || usage
-		if [ -n "${KAS_ISAR_ARGS}" ]; then
-			set_container_image_var
-			# SC2086: Double quote to prevent globbing and word splitting.
-			# shellcheck disable=2086
-			trace ${KAS_CONTAINER_COMMAND} run -v "${KAS_BUILD_DIR}":/build:rw \
-					 --workdir=/build --rm ${KAS_ISAR_ARGS} \
-					 ${KAS_CONTAINER_IMAGE} \
-					 sudo rm -rf tmp
-		else
-			trace rm -rf "${KAS_BUILD_DIR}/tmp"
-		fi
+		run_clean "$1"
 		exit 0
 		;;
 	shell)
@@ -245,6 +288,10 @@ while [ $# -gt 0 ] && [ $KAS_EXTRA_BITBAKE_ARGS -eq 0 ]; do
 	-c|--cmd|--command)
 		KAS_BITBAKE_C_OPTION_ARGS="$2"
 		shift 2
+		;;
+	-E|--preserve-env)
+		echo "$1 is not supported with kas-container"
+		exit 1
 		;;
 	--)
 		KAS_EXTRA_BITBAKE_ARGS=$#
@@ -327,7 +374,7 @@ set -- "$@" -v "${KAS_REPO_DIR}":/repo:${KAS_REPO_MOUNT_OPT} \
 	-v "${KAS_BUILD_DIR}":/build:rw \
 	--workdir=/repo \
 	-e KAS_BUILD_DIR=/build \
-	-e USER_ID="$(id -u)" -e GROUP_ID="$(id -g)" --rm
+	-e USER_ID="$(id -u)" -e GROUP_ID="$(id -g)" --rm --init
 
 if [ -n "${KAS_SSH_DIR}" ] ; then
 	if [ ! -d "${KAS_SSH_DIR}" ]; then

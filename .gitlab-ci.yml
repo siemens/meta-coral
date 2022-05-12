@@ -21,7 +21,7 @@ variables:
 
 .kas-build:
   stage: build
-  image: ghcr.io/siemens/kas/kas-isar:2.6.3
+  image: ghcr.io/siemens/kas/kas-isar:3.0.2
   tags: [privileged]
   variables:
     KAS_TASK: "build"
@@ -43,7 +43,7 @@ variables:
 
 cache-maintenance:
   stage: prepare
-  image: ghcr.io/siemens/kas/kas-isar:2.6.3
+  image: ghcr.io/siemens/kas/kas-isar:3.0.2
   tags: [privileged]
   script:
    - mkdir -p ${SSTATE_DIR} ${CCACHE_DIR} ${DL_DIR}
