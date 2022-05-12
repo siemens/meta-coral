@@ -7,19 +7,14 @@
 #
 # This file is subject to the terms and conditions of the MIT License.
 # See COPYING.MIT file in the top-level directory.
-#
-# Files below ./files are licensed under the Apache-2.0 license
 
-inherit dpkg
+inherit dpkg-gbp
 
 # build this package for the buildchroot-host
 PACKAGE_ARCH = "${HOST_ARCH}"
 # we do not really cross-compile, but have to work in the buildchroot-host
 ISAR_CROSS_COMPILE = "1"
 
-PR = "1"
-SRC_URI = "https://github.com/bazelbuild/bazel/releases/download/${PV}/bazel-${PV}-dist.zip;subdir=bazel-${PV} \
-           file://bazel-${PV}/debian                                                                           "
-SRC_URI[sha256sum] = "9981d0d53a356c4e87962847750a97c9e8054e460854748006c80f0d7e2b2d33"
-
-S = "${WORKDIR}/bazel-${PV}"
+# note, this is not the official debian bazel-bootstrap (it still only provides 3.5.x)
+SRC_URI = "git://git@salsa.debian.org/bazel-team/bazel-bootstrap.git;protocol=https;branch=jc-4.1.0"
+SRCREV = "abc7db5dae3293a1905418bcbc733ed1effcd14d"
