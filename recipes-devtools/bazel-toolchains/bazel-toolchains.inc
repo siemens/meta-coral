@@ -22,4 +22,4 @@ do_link_bazel_toolchains() {
     cp -r ${WORKDIR}/local_toolchains ${S}/
 }
 
-addtask link_bazel_toolchains after do_install_builddeps before do_fetch_bazel_deps
+addtask link_bazel_toolchains after do_unpack before do_fetch_bazel_deps
