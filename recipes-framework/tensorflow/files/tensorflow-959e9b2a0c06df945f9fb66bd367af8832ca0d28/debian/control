@@ -13,7 +13,8 @@ Maintainer: Mentor Embedded <embedded_support@mentor.com>
 Section: science
 Priority: optional
 Build-Depends: debhelper-compat (=13),
-               bazel-bootstrap:native (>= 3.5.1),
+               bazel-bootstrap:native (>= 4.1.0),
+               bazel-bootstrap-data,
                git,
                dh-python,
                libabsl-dev,
