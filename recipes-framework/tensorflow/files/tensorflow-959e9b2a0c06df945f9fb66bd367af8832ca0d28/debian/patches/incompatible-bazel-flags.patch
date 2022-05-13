@@ -1,0 +1,13 @@
+Index: tensorflow-959e9b2a0c06df945f9fb66bd367af8832ca0d28/.bazelrc
+===================================================================
+--- tensorflow-959e9b2a0c06df945f9fb66bd367af8832ca0d28.orig/.bazelrc
++++ tensorflow-959e9b2a0c06df945f9fb66bd367af8832ca0d28/.bazelrc
+@@ -131,7 +131,7 @@ build --noincompatible_remove_legacy_who
+ # These are bazel 2.0's incompatible flags. Tensorflow needs to use bazel 2.0.0
+ # to use cc_shared_library, as part of the Tensorflow Build Improvements RFC:
+ # https://github.com/tensorflow/community/pull/179
+-build --noincompatible_prohibit_aapt1
++#build --noincompatible_prohibit_aapt1
+ 
+ build --enable_platform_specific_config
+ 
