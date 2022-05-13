@@ -169,6 +169,6 @@ local:
 	mkdir -p $(@)
 	$(foreach r,$(EXTERNAL_SOURCES),						\
 		echo "# importing $(r) from bazel cache to $(@)/..." &&			\
-		mv $(HOME)/.cache/bazel/_bazel_root/*/external/$(r) $(@)/ && )		\
+		mv $(HOME)/.cache/bazel/_bazel_$(USER)/*/external/$(r) $(@)/ && )		\
 	symlinks -cr .
 	$(clean_bazel_env)
