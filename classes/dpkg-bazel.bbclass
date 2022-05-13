@@ -12,20 +12,38 @@
 inherit dpkg
 
 DEPENDS += "bazel-bootstrap"
+BAZEL_FETCH_DEPENDS += "bazel-bootstrap bazel-bootstrap-data git symlinks"
+
+# ccache + bazel is broken
+USE_CCACHE="0"
+
+# sensible defaults for xz to avoid OOM
+XZ_MEMLIMIT ?= "50%"
+XZ_THREADS ?= "${@oe.utils.cpu_count(at_least=2)}"
+XZ_THREADS[vardepvalue] = "1"
+XZ_OPTIONS ?= "--memlimit=${XZ_MEMLIMIT} --threads=${XZ_THREADS}"
+XZ_OPTIONS[vardepsexclude] += "XZ_MEMLIMIT XZ_THREADS"
+XZ_DEP = "xz-utils"
 
 # fetch all bazel deps and add to package sources
 bazel_fetch() {
-    dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
-    sudo chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} /bin/bash -c 'cd ${PP}/${PPS} && rm -rf local && ./debian/rules local'
-    dpkg_undo_mounts
+    schroot -d / -c ${SBUILD_CHROOT} -u root -- sh <<EOF
+        set -e
+        echo ${ISAR_APT_REPO} > /etc/apt/sources.list.d/isar_apt.list;
+        apt-get -y -q update
+        apt-get -y -q -o Debug::pkgProblemResolver=yes \
+                    --no-install-recommends --allow-downgrades \
+                    install ${BAZEL_FETCH_DEPENDS} ${XZ_DEP}
+        cd ${PP}/${PPS} && ./debian/rules local
+EOF
 
     # generate orig archive, compress in parallel
-    tar -c -I 'xz -1 -T0' -f ${WORKDIR}/${PN}_${PV}.orig.tar.xz -C ${S} --exclude=.git --exclude='./debian' .
-    # fix permissions of bazel cache
-    sudo chown -R $( id -u ):$( id -g ) ${WORKDIR}/.cache/bazel
+    tar -c -I 'xz ${XZ_OPTIONS}' -f ${WORKDIR}/${PN}_${PV}.orig.tar.xz -C ${S} --exclude=.git --exclude=.env .
 }
 
+do_fetch_bazel_deps[cleandirs] += "${S}/local"
+do_fetch_bazel_deps[depends] += "${SCHROOT_DEP} bazel-bootstrap:do_deploy_deb"
 python do_fetch_bazel_deps() {
     from shutil import copyfile
     from subprocess import check_call
@@ -37,7 +55,8 @@ python do_fetch_bazel_deps() {
     _, debian_rules_chksum = checksum_list[0]
 
     # build the hash value
-    fetch_hash = d.getVar('SRC_URI') + " " + (d.getVar('SRCREV') or "") + "\n" + \
+    fetch_hash = d.getVar('SRC_URI', False) + " " + (d.getVar('SRCREV', True) or "") + "\n" + \
+        d.getVar('BAZEL_FETCH_DEPENDS', True) + '\n' + \
         debian_rules_chksum + "\n"
 
     orig_tar_xz = d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.xz"
@@ -54,7 +73,11 @@ python do_fetch_bazel_deps() {
             check_call(["tar", "xJf", orig_tar_xz_wd, "-C", d.getVar('S')])
             return
 
-    bb.build.exec_func("bazel_fetch", d)
+    bb.build.exec_func('schroot_create_configs', d)
+    try:
+        bb.build.exec_func("bazel_fetch", d)
+    finally:
+        bb.build.exec_func('schroot_delete_configs', d)
 
     # cache the fetch archive in DL_DIR along with its hash file
     copyfile(orig_tar_xz_wd, orig_tar_xz_dl)
@@ -62,7 +85,7 @@ python do_fetch_bazel_deps() {
         hash_file.write(fetch_hash)
 }
 
-addtask fetch_bazel_deps after do_install_builddeps before do_dpkg_build
+addtask fetch_bazel_deps after do_prepare_build before do_dpkg_build
 
 python clean_bazel_fetch() {
     orig_tar_xz = d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.xz"
