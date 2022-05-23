@@ -12,6 +12,8 @@
 include /usr/share/dpkg/architecture.mk
 include /usr/share/dpkg/pkg-info.mk
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 # ---------------------------------------------------------------------------------------------------------------------
 # External sources
 # ---------------------------------------------------------------------------------------------------------------------
@@ -26,18 +28,15 @@ EXTERNAL_SOURCES = \
 	build_bazel_rules_apple \
 	build_bazel_rules_swift \
 	clog \
-	com_github_grpc_grpc \
 	com_google_absl \
 	com_google_glog \
 	com_google_googleapis \
-	com_google_protobuf \
 	coral_crosstool \
 	cpuinfo \
 	eigen_archive \
 	envoy_api \
 	farmhash_archive \
 	fft2d \
-	flatbuffers \
 	FP16 \
 	FXdiv \
 	gemmlowp \
@@ -48,7 +47,6 @@ EXTERNAL_SOURCES = \
 	io_bazel_rules_go \
 	org_tensorflow \
 	pthreadpool \
-	pybind11 \
 	rules_cc \
 	rules_java \
 	tf_toolchains \
@@ -56,10 +54,43 @@ EXTERNAL_SOURCES = \
 	upb
 
 # ---------------------------------------------------------------------------------------------------------------------
+# System dependencies
+# ---------------------------------------------------------------------------------------------------------------------
+
+# This list should be synced with the system deps of tensorflow
+SYSTEM_LIBS = com_github_grpc_grpc \
+              com_google_protobuf  \
+              curl                 \
+              double_conversion    \
+              gast_archive         \
+              gif                  \
+              libjpeg_turbo        \
+              nasm                 \
+              nsync                \
+              snappy               \
+              zlib                 \
+              png                  \
+              pasta                \
+              astunparse_archive   \
+              flatbuffers          \
+              absl_py              \
+              opt_einsum_archive   \
+              jsoncpp_git          \
+              pybind11
+
+null  :=
+space := $(null) #
+comma := ,
+
+# Comma separated list of system libraries
+system_libs = $(subst $(space),$(comma),$(strip $(foreach l,$(SYSTEM_LIBS),$(l))))
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Build settings
 # ---------------------------------------------------------------------------------------------------------------------
 
 export CUSTOM_BAZEL_FLAGS = \
+		--repo_env=TF_SYSTEM_LIBS=$(system_libs) \
 		$(foreach r,$(EXTERNAL_SOURCES),--override_repository=$(r)=$(CURDIR)/local/$(r))
 
 # Produce optimized code
