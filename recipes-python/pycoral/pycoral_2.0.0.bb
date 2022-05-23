@@ -28,3 +28,8 @@ SRC_URI += "gitsm://git@github.com/google-coral/${PN};protocol=https \
            file://0002-add-CUSTOM_BAZEL_FLAGS-var-for-pybind.patch"
 
 PROVIDES = "python3-pycoral pycoral-examples"
+
+do_prepare_build() {
+    # remove outdated compat file from git repo
+    rm -rf ${S}/debian/compat
+}
