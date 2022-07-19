@@ -15,10 +15,7 @@ stages:
 variables:
   SSTATE_LOCATION: "${RUNNER_SSTATE}/${CI_PROJECT_NAME}"
   SSTATE_MIRRORS: "file://.* ${SSTATE_LOCATION}/PATH;downloadfilename=PATH"
-  CCACHE_DIR: "/cache/meta-coral-ccache"
-  DL_DIR: "/cache/meta-coral-dl"
   SSTATE_MAX_AGE: "3d"
-  DL_MAX_AGE: "3"
 
 .kas-build:
   stage: build
@@ -26,6 +23,10 @@ variables:
   tags: [privileged]
   variables:
     KAS_TASK: "build"
+  before_script:
+   - echo "=== Clean sstate at ${SSTATE_LOCATION} ==="
+   - kas checkout kas/meta-coral.yml
+   - ./isar/scripts/isar-sstate clean "${SSTATE_LOCATION}" --max-age "${SSTATE_MAX_AGE}"
   after_script:
    - find build/tmp/deploy/isar-apt -name *.deb
    - cp -r build/tmp/deploy/isar-apt/debian-bullseye-*/apt/debian-bullseye/dists .
@@ -44,19 +45,6 @@ variables:
     when: always
 
 ######## Build jobs ########
-
-cache-maintenance:
-  stage: prepare
-  image: ghcr.io/siemens/kas/kas-isar:3.0.2
-  tags: [privileged]
-  script:
-   - mkdir -p ${CCACHE_DIR} ${DL_DIR}
-   - du -hs ${DL_DIR}
-   - find ${DL_DIR} -atime +${DL_MAX_AGE} -print -delete
-   - du -hs ${CCACHE_DIR}
-   - echo "=== Clean sstate at ${SSTATE_LOCATION} ==="
-   - kas checkout kas/meta-coral.yml
-   - ./isar/scripts/isar-sstate clean "${SSTATE_LOCATION}" --max-age "${SSTATE_MAX_AGE}"
 
 reuse-compliant:
   stage: prepare
@@ -83,16 +71,16 @@ meta-coral-amd64:
   extends:
     - .kas-build
   script:
-   - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml
+   - kas build kas/meta-coral.yml
 
 meta-coral-amd64-fulltf:
   extends:
     - .kas-build
   script:
-   - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml:kas/opt/full-tensorflow.yml
+   - kas build kas/meta-coral.yml:kas/opt/full-tensorflow.yml
 
 meta-coral-aarch64:
   extends:
     - .kas-build
   script:
-    - kas build kas/meta-coral.yml:kas/opt/caches-from-env.yml:kas/opt/aarch64-target.yml
+    - kas build kas/meta-coral.yml:kas/opt/aarch64-target.yml

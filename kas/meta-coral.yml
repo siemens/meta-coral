@@ -28,7 +28,5 @@ target: ci-meta-coral
 local_conf_header:
   arch: |
     DISTRO_ARCH = "amd64"
-  ccache: |
-    USE_CCACHE = "1"
   kernel: |
     KERNEL_NAME = "${DISTRO_ARCH}"
