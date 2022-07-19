@@ -7,11 +7,8 @@
 # This file is subject to the terms and conditions of the MIT License.
 # See COPYING.MIT file in the top-level directory.
 #
-# use corresponding environment variables to define bitbake cache variables
-# (relevant for CI only)
 
 header:
   version: 10
 
-env:
-  CCACHE_DIR: ""
+distro: debian-buster
