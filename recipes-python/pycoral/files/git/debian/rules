@@ -189,6 +189,10 @@ override_dh_auto_clean:
 
 # this rule is only used when the source tarball does not include local copies of the external
 # projects we depend on
+
+# path to local tensorflow bazel repository
+TF_TP=local/org_tensorflow/third_party
+
 .PHONY: local
 local:
 	$(prepare_bazel_env)
@@ -201,5 +205,15 @@ local:
 	$(foreach r,$(EXTERNAL_SOURCES),						\
 		echo "# importing $(r) from bazel cache to $(@)/..." &&			\
 		mv $(HOME)/.cache/bazel/_bazel_$(USER)/*/external/$(r) $(@)/ && )		\
-	symlinks -cr .
+	symlinks -crd .
+#   fix inter-project links
+	cp $(TF_TP)/FP16/BUILD.bazel             local/eigen_archive/BUILD.bazel
+	cp $(TF_TP)/fft2d/fft2d.BUILD            local/fft2d/BUILD.bazel
+	cp $(TF_TP)/farmhash/farmhash.BUILD      local/farmhash_archive/BUILD.bazel
+	cp $(TF_TP)/eigen3/eigen_archive.BUILD   local/eigen_archive/BUILD.bazel
+	cp $(TF_TP)/cpuinfo/BUILD.bazel          local/cpuinfo/BUILD.bazel
+	cp $(TF_TP)/googleapis/googleapis.BUILD  local/com_google_googleapis/BUILD.bazel
+	cp $(TF_TP)/absl/com_google_absl.BUILD   local/com_google_absl/BUILD.bazel
+	cp $(TF_TP)/clog/BUILD.bazel             local/clog/BUILD.bazel
+	cp $(TF_TP)/arm_neon_2_x86_sse.BUILD     local/arm_neon_2_x86_sse/BUILD.bazel
 	$(clean_bazel_env)
