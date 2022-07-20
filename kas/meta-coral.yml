@@ -21,6 +21,10 @@ repos:
     refspec: cc6c78ebb6287fd16202b3c09ca7e8d3582120b0
     layers:
       meta:
+    patches:
+      "0001":
+        repo: meta-coral
+        path: patches/isar/0001-fix-locate-generated-debs-in-WORKDIR.patch
 
   meta-coral:
 
