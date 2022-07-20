@@ -11,6 +11,10 @@
 header:
   version: 10
 
+env:
+  DISTRO_APT_PREMIRRORS: ""
+  SSTATE_MIRRORS: ""
+
 repos:
   isar:
     url: https://github.com/ilbers/isar
