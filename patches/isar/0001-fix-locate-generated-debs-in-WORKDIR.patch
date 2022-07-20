@@ -1,0 +1,49 @@
+From e9d0777b52c8e3c18e2ae0345f3766ba03dbcf71 Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Wed, 20 Jul 2022 12:02:15 +0200
+Subject: [PATCH 1/1] fix: locate generated debs in WORKDIR
+
+This patch is an addendum to c69716c.
+It fixes locating the generated debs for
+deb_clean and sstate.
+
+Signed-off-by: Felix Moessbauer <felix.moessbauer@siemens.com>
+---
+ meta/classes/dpkg-base.bbclass | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/meta/classes/dpkg-base.bbclass b/meta/classes/dpkg-base.bbclass
+index 79c1ce1c..64f0c26b 100644
+--- a/meta/classes/dpkg-base.bbclass
++++ b/meta/classes/dpkg-base.bbclass
+@@ -258,15 +258,15 @@ SSTATEPOSTINSTFUNCS += "dpkg_build_sstate_finalize"
+ 
+ dpkg_build_sstate_prepare() {
+     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
+-    if [ -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" ]; then
+-        cp -f ${S}/../*.deb -t .
++    if [ -n "$(find ${WORKDIR} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
++        cp -f ${WORKDIR}/*.deb -t .
+     fi
+ }
+ 
+ dpkg_build_sstate_finalize() {
+     # this runs in SSTATE_INSTDIR
+     if [ -n "$(find . -maxdepth 1 -name '*.deb' -print -quit)" ]; then
+-        mv -f ./*.deb -t ${S}/..
++        mv -f ./*.deb -t ${WORKDIR}/
+     fi
+ }
+ 
+@@ -282,7 +282,7 @@ do_dpkg_build[depends] = "${SCHROOT_DEP}"
+ CLEANFUNCS += "deb_clean"
+ 
+ deb_clean() {
+-    DEBS=$( find ${S}/.. -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
++    DEBS=$( find ${WORKDIR} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
+     if [ -n "${DEBS}" ]; then
+         for d in ${DEBS}; do
+             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
+-- 
+2.30.2
+
