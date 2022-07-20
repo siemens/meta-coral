@@ -54,6 +54,7 @@ Build-Depends: debhelper-compat (=13),
                python3-protobuf:native (>= 3.9.2),
                python3-astunparse:native (>= 1.6.3),
                python3-gast:native (>= 0.3.3),
+               python3-six,
                symlinks,
                wget,
                zlib1g-dev
