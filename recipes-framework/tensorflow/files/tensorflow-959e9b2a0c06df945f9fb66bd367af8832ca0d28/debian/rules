@@ -67,7 +67,6 @@ EXTERNAL_SOURCES = \
 		   rules_proto						\
 		   rules_python						\
                    ruy							\
-                   six_archive						\
                    sobol_data						\
 		   tblib_archive					\
 		   termcolor_archive					\
@@ -100,7 +99,8 @@ SYSTEM_LIBS = com_github_grpc_grpc \
               absl_py              \
               opt_einsum_archive   \
               jsoncpp_git          \
-              pybind11
+              pybind11             \
+              six_archive
 
 # Comma separated list of system libraries
 system_libs = $(subst $(space),$(comma),$(strip $(foreach l,$(SYSTEM_LIBS),$(l))))
