@@ -78,6 +78,7 @@ meta-coral-amd64-fulltf:
     - .kas-build
   script:
    - kas build kas/meta-coral.yml:kas/opt/full-tensorflow.yml
+  when: manual
 
 meta-coral-aarch64:
   extends:

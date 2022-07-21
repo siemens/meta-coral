@@ -13,6 +13,8 @@ require recipes-devtools/bazel-toolchains/bazel-toolchains.inc
 require tensorflow-src.inc
 
 # only build tflite python bindings instead of full TF
+# Note, that full-tf builds currently fail due to
+# a bug in bazel 4.1 (missing files in embedded_tools / bazel_tools).
 TENSORFLOW_LITEONLY ?= "1"
 
 PR = "2"
