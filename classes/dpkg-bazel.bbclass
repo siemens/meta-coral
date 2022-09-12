@@ -13,6 +13,17 @@ inherit dpkg
 
 DEPENDS += "bazel-bootstrap"
 
+# packages to install into the shared buildchroot
+BAZEL_INSTALL = "bazel-bootstrap git symlinks"
+
+# install bazel into the buildchroot so we can fetch external sources using bazel
+bazel_install() {
+    buildchroot_do_mounts
+    sudo -E chroot ${BUILDCHROOT_DIR} apt-get install -y ${BAZEL_INSTALL}
+}
+bazel_install[depends] = "${BUILDCHROOT_DEP}"
+bazel_install[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+
 # fetch all bazel deps and add to package sources
 bazel_fetch() {
     dpkg_do_mounts
@@ -54,6 +65,7 @@ python do_fetch_bazel_deps() {
             check_call(["tar", "xJf", orig_tar_xz_wd, "-C", d.getVar('S')])
             return
 
+    bb.build.exec_func("bazel_install", d)
     bb.build.exec_func("bazel_fetch", d)
 
     # cache the fetch archive in DL_DIR along with its hash file
@@ -62,7 +74,8 @@ python do_fetch_bazel_deps() {
         hash_file.write(fetch_hash)
 }
 
-addtask fetch_bazel_deps after do_install_builddeps before do_dpkg_build
+do_fetch_bazel_deps[depends] += "${BUILDCHROOT_DEP}"
+addtask fetch_bazel_deps after do_prepare_build before do_dpkg_build
 
 python clean_bazel_fetch() {
     orig_tar_xz = d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.xz"
