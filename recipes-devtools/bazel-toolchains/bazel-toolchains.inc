@@ -17,9 +17,7 @@ inherit dpkg-bazel
 FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files"
 SRC_URI += "file://local_toolchains"
 
-do_link_bazel_toolchains[cleandirs] += "${S}/local_toolchains"
-do_link_bazel_toolchains() {
+do_prepare_build[cleandirs] += "${S}/local_toolchains"
+do_prepare_build_append() {
     cp -r ${WORKDIR}/local_toolchains ${S}/
 }
-
-addtask link_bazel_toolchains after do_unpack before do_fetch_bazel_deps
