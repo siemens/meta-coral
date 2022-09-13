@@ -120,7 +120,7 @@ export TF_IGNORE_MAX_BAZEL_VERSION = 1
 export CC_OPT_FLAGS                = -Wno-sign-compare
 export PYTHON_BIN_PATH             = /usr/bin/python3
 export PYTHON_LIB_PATH             = /usr/lib/python3/dist-packages
-export CROSSTOOL_PYTHON_INCLUDE_PATH = /usr/include/python3.9
+export CROSSTOOL_PYTHON_INCLUDE_PATH = /usr/include/$(shell py3versions -d)
 
 export CUSTOM_BAZEL_FLAGS =										\
 		--repo_env=TF_SYSTEM_LIBS=$(system_libs)                				\
