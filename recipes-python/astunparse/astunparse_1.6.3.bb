@@ -11,10 +11,11 @@
 
 inherit dpkg-gbp
 
-SRC_URI = " \
-    git://salsa.debian.org/python-team/packages/astunparse.git;protocol=https;branch=master \
-    file://0001-add-support-to-cross-compile-the-package.patch"
-SRCREV = "430d69e0712f0bea418862efdaa01df35c321c1d"
+# this is an architecture=all only package, hence build with host-toolchain
+PACKAGE_ARCH="${HOST_ARCH}"
+
+SRC_URI = "git://salsa.debian.org/python-team/packages/astunparse.git;protocol=https;branch=debian/master"
+SRCREV = "16908188060d98fd94251334fba7d4f740f1d3ad"
 
 PROVIDES += "python3-${PN}"
 

@@ -31,10 +31,6 @@ Files: recipes-kernel/gasket-dkms/files/*
 Copyright: 2022 Siemens AG
 License: GPL-2.0-or-later
 
-Files: recipes-python/astunparse/files/*
-Copyright: 2022 Siemens AG
-License: BSD-3-Clause
-
 Files: recipes-python/pycoral/files/*
 Copyright: 2022 Siemens AG
            2021, Mentor Graphics, a Siemens business
