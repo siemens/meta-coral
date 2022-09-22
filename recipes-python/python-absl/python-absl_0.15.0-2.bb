@@ -11,9 +11,10 @@
 
 inherit dpkg-gbp
 
-SRC_URI = " \
-    git://salsa.debian.org/python-team/packages/python-absl.git;protocol=https;branch=debian/latest \
-    file://0001-add-support-to-cross-compile-the-package.patch"
+# this is an architecture=all only package, hence build with host-toolchain
+PACKAGE_ARCH="${HOST_ARCH}"
+
+SRC_URI = "git://salsa.debian.org/python-team/packages/python-absl.git;protocol=https;branch=debian/latest"
 SRCREV = "debian/${PV}"
 
 PROVIDES += "python3-absl"
