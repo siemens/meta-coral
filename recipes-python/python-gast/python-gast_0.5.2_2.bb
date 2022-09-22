@@ -11,8 +11,8 @@
 
 inherit dpkg-gbp
 
-DEB_BUILD_PROFILES += "nocheck"
-DEB_BUILD_OPTIONS += "nocheck"
+# this is an architecture=all only package, hence build with host-toolchain
+PACKAGE_ARCH="${HOST_ARCH}"
 
 SRC_URI = "git://salsa.debian.org/python-team/packages/python-gast.git;protocol=https;branch=debian/master"
 SRCREV = "61a41edb3a692024b3dc7d2e70ca92ce40ba0860"

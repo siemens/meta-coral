@@ -39,7 +39,3 @@ Files: recipes-python/pycoral/files/*
 Copyright: 2022 Siemens AG
            2021, Mentor Graphics, a Siemens business
 License: Apache-2.0
-
-Files: recipes-python/python-gast/files/*
-Copyright: 2022 Siemens AG
-License: BSD-3-Clause
