@@ -10,6 +10,9 @@
 
 inherit dpkg-gbp
 
+GBP_DEPENDS_remove = "pristine-tar"
+GBP_EXTRA_OPTIONS = "--git-no-pristine-tar --git-upstream-branch=jc-4.1.0 --git-upstream-tree=BRANCH"
+
 # build this package for the buildchroot-host
 PACKAGE_ARCH = "${HOST_ARCH}"
 # we do not really cross-compile, but have to work in the buildchroot-host
