@@ -4,7 +4,8 @@ Priority: optional
 Build-Depends: debhelper (>= 9),
                libabsl-dev,
                libflatbuffers-dev,
-               libusb-1.0-0-dev
+               libusb-1.0-0-dev,
+               xxd
 Standards-Version: 3.9.6
 Homepage: https://coral.ai/
 
