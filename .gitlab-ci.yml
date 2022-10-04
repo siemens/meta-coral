@@ -16,6 +16,9 @@ variables:
   SSTATE_LOCATION: "${RUNNER_SSTATE}/${CI_PROJECT_NAME}"
   SSTATE_MIRRORS: "file://.* ${SSTATE_LOCATION}/PATH;downloadfilename=PATH"
   SSTATE_MAX_AGE: "3d"
+  http_proxy: "$CODE_PROXY"
+  https_proxy: "$CODE_PROXY"
+  no_proxy: "$CODE_NO_PROXY"
 
 .kas-build:
   stage: build
@@ -50,10 +53,6 @@ reuse-compliant:
   stage: prepare
   image: python:latest
   tags: [DOCKER, AWS]
-  variables:
-    http_proxy: $CODE_PROXY
-    https_proxy: $CODE_PROXY
-    no_proxy: 127.0.0.1,localhost,.siemens.de,.siemens.net,.siemens.com,.siemens.io,s3.dualstack.eu-central-1.amazonaws.com
   before_script:
     - python3 -m venv ../venv
     - . ../venv/bin/activate
