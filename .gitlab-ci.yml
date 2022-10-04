@@ -22,7 +22,7 @@ variables:
 
 .kas-build:
   stage: build
-  image: ghcr.io/siemens/kas/kas-isar:3.0.2
+  image: ghcr.io/siemens/kas/kas-isar:3.1
   tags: [privileged]
   variables:
     KAS_TASK: "build"
