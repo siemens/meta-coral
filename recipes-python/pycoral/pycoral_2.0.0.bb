@@ -20,6 +20,9 @@ DEPENDS = " \
     python3-tflite-runtime \
 "
 
+# apply patches with git to not leave any traces
+PATCHTOOL = "git"
+
 S = "${WORKDIR}/git"
 SRCREV = "9972f8ec6dbb8b2f46321e8c0d2513e0b6b152ce"
 SRC_URI += "gitsm://git@github.com/google-coral/${PN};protocol=https \
@@ -28,6 +31,8 @@ SRC_URI += "gitsm://git@github.com/google-coral/${PN};protocol=https \
            file://0002-add-CUSTOM_BAZEL_FLAGS-var-for-pybind.patch"
 
 PROVIDES = "python3-pycoral pycoral-examples"
+
+do_unpack[cleandirs] += "${S}/debian"
 
 do_prepare_build() {
     # remove outdated compat file from git repo

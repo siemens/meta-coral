@@ -12,7 +12,7 @@
 inherit dpkg
 
 DEPENDS += "bazel-bootstrap"
-BAZEL_FETCH_DEPENDS += "bazel-bootstrap bazel-bootstrap-data git symlinks"
+BAZEL_FETCH_DEPENDS += "bazel-bootstrap bazel-bootstrap-data git symlinks quilt"
 
 # ccache + bazel is broken
 USE_CCACHE="0"
@@ -38,11 +38,23 @@ bazel_fetch() {
         apt-get -y -q -o Debug::pkgProblemResolver=yes \
                     --no-install-recommends --allow-downgrades \
                     install ${BAZEL_FETCH_DEPENDS} ${XZ_DEP}
-        cd ${PP}/${PPS} && ./debian/rules local
+        cd ${PP}/${PPS}
+        export QUILT_PATCHES=debian/patches
+        [ -f "$QUILT_PATCHES/series" ] && quilt push -a
+        ./debian/rules local
+        [ -f "$QUILT_PATCHES/series" ] && quilt pop -a
+        rm -rf .pc
 EOF
 
+    # fix owner of fetched content
+    sudo chown --recursive $(id -u):$(id -g) ${S}/local ${S}/debian
+
     # generate orig archive, compress in parallel
-    tar -c -I 'xz ${XZ_OPTIONS}' -f ${WORKDIR}/${PN}_${PV}.orig.tar.xz -C ${S} --exclude=.git --exclude=.env .
+    tar -c -I 'xz ${XZ_OPTIONS}' -f ${WORKDIR}/${PN}_${PV}.orig.tar.xz \
+        -C ${S} \
+        --exclude-vcs \
+        --exclude='./debian' \
+        --exclude='./.env' .
 }
 
 do_fetch_bazel_deps[cleandirs] += "${S}/local"
