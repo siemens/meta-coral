@@ -21,7 +21,7 @@ USE_CCACHE="0"
 XZ_MEMLIMIT ?= "50%"
 XZ_THREADS ?= "${@oe.utils.cpu_count(at_least=2)}"
 XZ_THREADS[vardepvalue] = "1"
-XZ_OPTIONS ?= "--memlimit=${XZ_MEMLIMIT} --threads=${XZ_THREADS}"
+XZ_OPTIONS ?= "--memlimit=${XZ_MEMLIMIT} --threads=${XZ_THREADS} -0"
 XZ_OPTIONS[vardepsexclude] += "XZ_MEMLIMIT XZ_THREADS"
 XZ_DEP = "xz-utils"
 
