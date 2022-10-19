@@ -30,8 +30,11 @@ bazel_fetch() {
     E="${@ isar_export_proxies(d)}"
     schroot -d / -c ${SBUILD_CHROOT} -u root -- sh <<EOF
         set -e
-        echo ${ISAR_APT_REPO} > /etc/apt/sources.list.d/isar_apt.list;
-        apt-get -y -q update
+        echo ${ISAR_APT_REPO} > /etc/apt/sources.list.d/isar-apt.list;
+        apt-get -y -q update \
+            -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+            -o Dir::Etc::SourceParts="-" \
+            -o APT::Get::List-Cleanup="0"
         apt-get -y -q -o Debug::pkgProblemResolver=yes \
                     --no-install-recommends --allow-downgrades \
                     install ${BAZEL_FETCH_DEPENDS} ${XZ_DEP}
