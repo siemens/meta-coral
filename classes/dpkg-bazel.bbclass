@@ -72,6 +72,7 @@ python do_fetch_bazel_deps() {
     # build the hash value
     fetch_hash = d.getVar('SRC_URI', False) + " " + (d.getVar('SRCREV', True) or "") + "\n" + \
         d.getVar('BAZEL_FETCH_DEPENDS', True) + '\n' + \
+        d.getVar('BB_TASKHASH', False) + '\n' + \
         debian_rules_chksum + "\n"
 
     orig_tar_xz = d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.xz"
