@@ -15,6 +15,6 @@ inherit dpkg-gbp
 PACKAGE_ARCH="${HOST_ARCH}"
 
 SRC_URI = "git://salsa.debian.org/python-team/packages/python-absl.git;protocol=https;branch=debian/latest"
-SRCREV = "debian/${PV}"
+SRCREV = "dba38d837e2ec6cd3b7ea43670b3cc0c4f5197e0"
 
 PROVIDES += "python3-absl"
