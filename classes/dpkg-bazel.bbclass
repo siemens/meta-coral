@@ -27,9 +27,16 @@ XZ_DEP = "xz-utils"
 
 # fetch all bazel deps and add to package sources
 bazel_fetch() {
+    deb_dl_dir_import "${WORKDIR}/rootfs" ${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+
+    deb_dir="/var/cache/apt/archives"
+    ext_root="${PP}/rootfs"
+    ext_deb_dir="${ext_root}${deb_dir}"
+
     E="${@ isar_export_proxies(d)}"
     schroot -d / -c ${SBUILD_CHROOT} -u root -- sh <<EOF
         set -e
+        cp -n --no-preserve=owner ${ext_deb_dir}/*.deb -t ${deb_dir}/ || :
         echo ${ISAR_APT_REPO} > /etc/apt/sources.list.d/isar-apt.list;
         apt-get -y -q update \
             -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
@@ -44,7 +51,9 @@ bazel_fetch() {
         ./debian/rules local
         [ -f "$QUILT_PATCHES/series" ] && quilt pop -a
         rm -rf .pc
+        cp -n --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/ || :
 EOF
+    deb_dl_dir_export "${WORKDIR}/rootfs" ${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 
     # fix owner of fetched content
     sudo chown --recursive $(id -u):$(id -g) ${S}/local ${S}/debian
