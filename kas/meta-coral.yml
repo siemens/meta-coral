@@ -21,6 +21,7 @@ repos:
     refspec: a4de91e7debb49b47e502b70527a6a91fb8cb9fc
     layers:
       meta:
+      meta-isar:
 
   meta-coral:
 
@@ -30,7 +31,5 @@ distro: debian-bullseye
 target: ci-meta-coral
 
 local_conf_header:
-  arch: |
-    DISTRO_ARCH = "amd64"
   kernel: |
     KERNEL_NAME = "${DISTRO_ARCH}"
