@@ -11,7 +11,7 @@
 inherit dpkg-gbp
 
 GBP_DEPENDS_remove = "pristine-tar"
-GBP_EXTRA_OPTIONS = "--git-no-pristine-tar --git-upstream-branch=jc-4.1.0 --git-upstream-tree=BRANCH"
+GBP_EXTRA_OPTIONS = "--git-no-pristine-tar --git-upstream-branch=master"
 
 # build this package for the buildchroot-host
 PACKAGE_ARCH = "${HOST_ARCH}"
@@ -19,5 +19,5 @@ PACKAGE_ARCH = "${HOST_ARCH}"
 ISAR_CROSS_COMPILE = "1"
 
 # note, this is not the official debian bazel-bootstrap (it still only provides 3.5.x)
-SRC_URI = "git://git@salsa.debian.org/bazel-team/bazel-bootstrap.git;protocol=https;branch=jc-4.1.0"
-SRCREV = "abc7db5dae3293a1905418bcbc733ed1effcd14d"
+SRC_URI = "git://git@salsa.debian.org/bazel-team/bazel-bootstrap.git;protocol=https;branch=master"
+SRCREV = "300661f84ab8682f09896ffab2651a0d3740711f"
