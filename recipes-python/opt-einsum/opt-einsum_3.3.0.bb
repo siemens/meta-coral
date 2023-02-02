@@ -23,7 +23,7 @@ SRC_URI[sha256sum] = "a748fdbccfce5af420ea56f8e2c51a6dc9e8774afd9179cb8addfab159
 
 PROVIDES += "python3-${PN}"
 
-python do_unpack_append() {
+python do_unpack:append() {
     from subprocess import check_call
     check_call(["tar", "xzf", d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.gz"])
 }

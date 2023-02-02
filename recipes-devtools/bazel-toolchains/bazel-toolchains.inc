@@ -14,10 +14,10 @@
 
 inherit dpkg-bazel
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files"
+FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files"
 SRC_URI += "file://local_toolchains"
 
 do_prepare_build[cleandirs] += "${S}/local_toolchains"
-do_prepare_build_append() {
+do_prepare_build:append() {
     cp -r ${WORKDIR}/local_toolchains ${S}/
 }
