@@ -24,7 +24,7 @@ PROVIDES += "python3-${PN}"
 
 do_dpkg_build[cleandirs] += "${S}/google_pasta.egg-info"
 
-python do_unpack_append() {
+python do_unpack:append() {
     from subprocess import check_call
     check_call(["tar", "xzf", d.getVar('PN') + "_" + d.getVar('PV') + ".orig.tar.gz"])
 }

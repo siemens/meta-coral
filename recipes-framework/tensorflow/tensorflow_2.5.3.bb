@@ -48,6 +48,6 @@ PROVIDES += " \
 DEB_BUILD_PROFILES += "${@ 'nofull' if d.getVar('TENSORFLOW_LITEONLY') == '1' else ''}"
 
 do_unpack[cleandirs] += "${S}/debian"
-python do_unpack_append() {
+python do_unpack:append() {
     os.remove(d.getVar('S') + "/.bazelversion")
 }

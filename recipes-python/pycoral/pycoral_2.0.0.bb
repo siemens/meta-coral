@@ -25,7 +25,7 @@ PATCHTOOL = "git"
 
 S = "${WORKDIR}/git"
 SRCREV = "9972f8ec6dbb8b2f46321e8c0d2513e0b6b152ce"
-SRC_URI += "gitsm://git@github.com/google-coral/${PN};protocol=https \
+SRC_URI += "gitsm://git@github.com/google-coral/${PN};protocol=https;branch=master \
            file://git/debian                                        \
            file://0001-feat-add-support-to-use-system-cross-compiler.patch \
            file://0002-add-CUSTOM_BAZEL_FLAGS-var-for-pybind.patch"

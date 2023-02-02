@@ -66,6 +66,7 @@ EOF
         --exclude='./.env' .
 }
 
+do_fetch_bazel_deps[network] = "1"
 do_fetch_bazel_deps[cleandirs] += "${S}/local"
 do_fetch_bazel_deps[depends] += "${SCHROOT_DEP} bazel-bootstrap:do_deploy_deb"
 python do_fetch_bazel_deps() {
