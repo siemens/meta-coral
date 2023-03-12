@@ -15,7 +15,14 @@ require recipes-devtools/bazel-toolchains/bazel-toolchains.inc
 
 PR  = "3"
 
-DEPENDS += "libedgetpu-dev"
+DEPENDS += " \
+    libedgetpu-dev \
+    python3-absl \
+    python3-astunparse \
+    python3-gast \
+    python3-keras-preprocessing \
+    python3-opt-einsum \
+    "
 RDEPENDS += "python3-tflite-runtime"
 
 # apply patches with git to not leave any traces
